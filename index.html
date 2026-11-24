@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14070b">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Spielabend">
+<title>Spielabend</title>
+<style>
+:root{
+  --bg:#14070b; --card:#22101a; --card2:#2d1522; --line:#4a2133;
+  --text:#f6e9ee; --muted:#c49aab; --accent:#e0245e; --accent2:#ff7a59; --gold:#f2c46d;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(ellipse at top,#3a0e20 0%,var(--bg) 60%);background-color:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding:16px 16px 40px}
+.wrap{max-width:520px;margin:0 auto}
+header{text-align:center;margin:8px 0 18px}
+header h1{font-family:Georgia,serif;font-style:italic;font-size:2rem;letter-spacing:.5px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{color:var(--muted);font-size:.9rem;margin-top:4px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.label{font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.lvl{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 2px;
+  font-size:.72rem;text-align:center;cursor:pointer}
+.lvl b{display:block;font-size:1.2rem;margin-bottom:2px}
+.lvl.on{background:linear-gradient(160deg,var(--accent),#8e1240);border-color:var(--accent)}
+.lvldesc{color:var(--muted);font-size:.85rem;margin-top:10px;min-height:1.2em}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
+.toggle span{font-size:.95rem}
+.toggle small{display:block;color:var(--muted);font-size:.78rem}
+.switch{position:relative;width:50px;height:28px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--line);border-radius:28px;transition:.2s}
+.slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.slider{background:var(--accent)}
+.switch input:checked+.slider:before{transform:translateX(22px)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:1.05rem;font-weight:600;cursor:pointer;color:#fff;
+  background:linear-gradient(90deg,var(--accent2),var(--accent));box-shadow:0 6px 24px rgba(224,36,94,.35)}
+.btn.sec{background:var(--card2);border:1px solid var(--line);box-shadow:none;font-weight:500;font-size:.95rem;padding:13px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.ico{font-size:1.5rem;width:34px;text-align:center;flex-shrink:0}
+.item .t{flex:1}
+.item .k{font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.item .v{font-size:1rem;margin-top:2px;line-height:1.4}
+.item .h{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.4}
+.re{background:none;border:1px solid var(--line);color:var(--text);border-radius:10px;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0}
+.task{background:linear-gradient(160deg,#3b1228,#22101a);border:1px solid var(--accent);border-radius:16px;padding:16px;margin-top:12px}
+.task .k{font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold)}
+.task .v{font-size:1.12rem;line-height:1.5;margin-top:6px}
+.badge{display:inline-block;font-size:.7rem;padding:3px 8px;border-radius:20px;background:var(--card2);border:1px solid var(--line);color:var(--muted);margin-top:10px;margin-right:4px}
+.timer{display:flex;align-items:center;gap:10px;margin-top:14px}
+.timer .clock{font-variant-numeric:tabular-nums;font-size:2rem;font-weight:600;flex:1}
+.timer button{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 14px;font-size:.95rem;cursor:pointer}
+.veto{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:.85rem;color:var(--muted)}
+.veto button{background:none;border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:600}
+.veto button:disabled{opacity:.35}
+textarea,input[type=text],input[type=time]{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem;font-family:inherit}
+textarea{min-height:150px;resize:vertical;line-height:1.5}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.names label{font-size:.78rem;color:var(--muted)}
+.hidden{display:none}
+.ampel{font-size:.82rem;color:var(--muted);line-height:1.55}
+.ampel b{color:var(--text)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+details summary{cursor:pointer;list-style:none;font-size:.9rem;color:var(--muted)}
+details summary::-webkit-details-marker{display:none}
+.overlay{position:fixed;inset:0;background:var(--bg);overflow:auto;padding:16px 16px 40px;z-index:10}
+.overlay .wrap{max-width:520px;margin:0 auto}
+.big{font-size:3.5rem;text-align:center;margin:40px 0 10px}
+.center{text-align:center;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.lv4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.toast{position:fixed;z-index:20;;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--accent);padding:10px 18px;border-radius:20px;font-size:.9rem;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Spielabend</h1>
+    <p>Ihr würfelt, die App denkt sich's aus.</p>
+  </header>
+
+  <div class="box">
+    <div class="label">Wie wild heute?</div>
+    <div class="levels" id="levels"></div>
+    <div class="lvldesc" id="lvldesc"></div>
+  </div>
+
+  <div class="box">
+    <div class="toggle">
+      <span>Ohne langes Stehen<small>Nur Ideen im Sitzen oder Liegen für <span class="nA"></span></small></span>
+      <label class="switch"><input type="checkbox" id="sitz" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <span>Rollentausch erlaubt<small>Die Rollen dürfen auch mal andersrum verteilt werden</small></span>
+      <label class="switch"><input type="checkbox" id="tausch" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <span>💦 Natursekt-Karten<small>Nur <span class="nB"></span> bei <span class="nA"></span> – in der Dusche oder im vorbereiteten Bett.</small></span>
+      <label class="switch"><input type="checkbox" id="ns"><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <span>💊 Potenzmittel<small>Die Gabe wird mit eingeplant</small></span>
+      <select id="med" style="background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px;font-size:.9rem"><option value="none">keins</option><option value="skat">SKAT-Spritze</option><option value="tab">Tablette</option></select>
+    </div>
+    <div id="medOpt" class="hidden" style="margin-top:6px">
+      <label style="font-size:.78rem;color:var(--muted)">Vorlauf in Minuten, so wie mit eurem Arzt besprochen</label>
+      <input type="text" id="medVor" inputmode="numeric" placeholder="z. B. 15">
+      <div class="toggle" id="medHeimRow" style="margin-top:6px">
+        <span>🤫 Heimlich erlaubt<small><span class="nB"></span> darf sie im geheimen Plan geben, ohne es anzukündigen</small></span>
+        <label class="switch"><input type="checkbox" id="medHeim"><span class="slider"></span></label>
+      </div>
+    </div>
+    <details style="margin-top:8px" id="rhyBox">
+      <summary>📅 Rhythmus für eure Spielabende</summary>
+      <div style="display:grid;gap:10px;margin-top:10px">
+        <div><label style="font-size:.78rem;color:var(--muted)">Wie oft?</label>
+          <select id="rhyArt" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"><option value="aus">Kein fester Rhythmus</option><option value="w1">Jede Woche</option><option value="w2">Alle 2 Wochen</option><option value="w3">Alle 3 Wochen</option><option value="w4">Alle 4 Wochen</option><option value="m">Einmal im Monat</option></select></div>
+        <div id="rhyW"><label style="font-size:.78rem;color:var(--muted)">Erster Termin – legt auch den Wochentag fest</label><input type="date" id="rhyAb" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"></div>
+        <div id="rhyM" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:.78rem;color:var(--muted)">Welcher im Monat?</label><select id="rhyNr" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"><option value="1">1.</option><option value="2">2.</option><option value="3">3.</option><option value="4">4.</option><option value="-1">letzter</option></select></div>
+          <div><label style="font-size:.78rem;color:var(--muted)">Wochentag</label><select id="rhyTag" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"><option value="5">Freitag</option><option value="6" selected>Samstag</option><option value="0">Sonntag</option><option value="1">Montag</option><option value="2">Dienstag</option><option value="3">Mittwoch</option><option value="4">Donnerstag</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:.78rem;color:var(--muted)">Uhrzeit</label><input type="time" id="rhyZeit" value="21:00"></div>
+          <div><label style="font-size:.78rem;color:var(--muted)">Wer plant?</label><select id="rhyWer" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"><option value="BA">Abwechselnd, sie zuerst</option><option value="AB">Abwechselnd, er zuerst</option><option value="B">Immer sie</option><option value="A">Immer er</option></select></div>
+        </div>
+        <div class="row2" style="margin-top:0"><button class="btn sec" id="rhySave">💾 Speichern</button><button class="btn sec" id="rhySend">📲 An Partner</button></div>
+      </div>
+    </details>
+    <details style="margin-top:8px" id="namenBox">
+      <summary>⚙︎ Eure Namen</summary>
+      <div class="names" style="margin-top:10px">
+        <div><label>Er</label><input type="text" id="nameA" placeholder="Name"></div>
+        <div><label>Sie</label><input type="text" id="nameB" placeholder="Name"></div>
+      </div>
+    </details>
+  </div>
+
+  <button class="btn" id="roll">🎲 Abend auswürfeln</button>
+  <button class="btn sec" id="planBtn" style="margin-top:8px">🤫 Geheimen Plan schmieden</button>
+  <div class="row2"><button class="btn sec" id="befehlBtn">👑 Befehl von <span class="nB"></span></button><button class="btn sec" id="fotoBtn">📸 Foto-Aufgabe</button></div>
+  <div class="box hidden" id="befehlBox" style="margin-top:14px"></div>
+  <details id="codeBox" style="margin-top:10px">
+    <summary>🔑 Code vom Partner eingeben</summary>
+    <textarea id="codeIn" style="min-height:70px;margin-top:8px" placeholder="Die Nachricht mit dem Code hier einfügen"></textarea>
+    <button class="btn sec" id="codeOk" style="margin-top:8px">Termin übernehmen</button>
+  </details>
+  <div class="box hidden" id="planStatus" style="margin-top:14px"></div>
+
+  <div id="result" class="hidden">
+    <div class="box" style="margin-top:14px">
+      <div class="label">Euer Szenario</div>
+      <div class="item"><div class="ico">🎭</div><div class="t"><div class="k">Rollen</div><div class="v" id="rRolle"></div><div class="h" id="rRolleH"></div></div><button class="re" data-re="rolle">↻</button></div>
+      <div class="item"><div class="ico">📍</div><div class="t"><div class="k">Ort</div><div class="v" id="rOrt"></div><div class="h" id="rOrtH"></div></div><button class="re" data-re="ort">↻</button></div>
+      <div class="item"><div class="ico">🗝️</div><div class="t"><div class="k">Spielzeug</div><div class="v" id="rToy"></div><div class="h" id="rToyH"></div></div><button class="re" data-re="toy">↻</button></div>
+      <div class="item hidden" id="medRow"><div class="ico">💊</div><div class="t"><div class="k" id="rMedK">Potenzmittel</div><div class="v" id="rMed"></div><div class="h" id="rMedH"></div></div><button class="re" id="medDone" title="Gegeben">✓</button></div>
+      <div class="item"><div class="ico">👗</div><div class="t"><div class="k">Dresscode</div><div class="v" id="rDress"></div></div><button class="re" data-re="dress">↻</button></div>
+
+      <div class="task">
+        <div class="k" id="tNr">Aufgabe 1</div>
+        <div class="v" id="tText"></div>
+        <div id="tBadges"></div>
+        <div class="timer">
+          <div class="clock" id="clock">00:00</div>
+          <button id="tStart">▶︎ Start</button>
+          <button id="tReset">↺</button>
+        </div>
+      </div>
+      <div class="veto">
+        <span>Veto: <span class="nA"></span> <b id="vA">2</b> · <span class="nB"></span> <b id="vB">2</b></span>
+        <span><button id="vetoA">Veto <span class="nA"></span></button> <button id="vetoB">Veto <span class="nB"></span></button></span>
+      </div>
+      <div class="row2">
+        <button class="btn sec" id="next">Nächste Aufgabe →</button>
+        <button class="btn sec" id="hotter">🔥 Eine Stufe heißer</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="label">Einladung für <span class="nB"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><label style="font-size:.78rem;color:var(--muted)">Uhrzeit</label><input type="time" id="zeit" value="21:00"></div>
+        <div><label style="font-size:.78rem;color:var(--muted)">Wer lädt ein?</label>
+          <select id="von" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem">
+            <option value="A">Er an sie</option><option value="B">Sie an ihn</option>
+          </select></div>
+      </div>
+      <textarea id="einladung"></textarea>
+      <div class="row2">
+        <button class="btn sec" id="neuEinl">↻ Andere Formulierung</button>
+        <button class="btn sec" id="teilen">📲 Verschicken</button>
+      </div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Die Einladung verrät nur Ort, Zeit, Dresscode und die Rolle – die Aufgaben bleiben eine Überraschung.</p>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:14px">
+    <div class="label">Eure Spielregeln</div>
+    <div class="ampel">
+      <span class="dot" style="background:#3ccf6e"></span><b>Grün</b> – weiter so, gern mehr.<br>
+      <span class="dot" style="background:#f2c46d"></span><b>Gelb</b> – langsamer, kurz durchatmen.<br>
+      <span class="dot" style="background:#e0245e"></span><b>Rot</b> – sofort Stopp, ohne Diskussion.<br><br>
+      Mit Knebel oder Kopfhörer gilt stattdessen: dreimal klopfen = Stopp. Handschellen-Schlüssel immer griffbereit, niemanden gefesselt allein lassen. In der Dusche rutschfeste Matte und Hocker, aber niemanden in der Dusche fesseln. Natursekt nur in der Dusche oder im Bett mit wasserdichter Unterlage und Handtüchern, nicht in Augen oder Mund, nicht bei Blasenentzündung oder anderen Infekten, danach gründlich abduschen. Wachs nur von echten Massagekerzen.<br><br>
+      <b>Potenzmittel:</b> nur die verordnete Dosis, nie zwei Mittel am selben Abend kombinieren und nichts nachlegen. Bei Tabletten keine Poppers oder andere Nitrate. Die SKAT-Spritze gibt <span class="nB"></span> nur, wenn sie vom Arzt eingewiesen wurde. Im heimlichen Modus gilt: An Spieltagen nimmt <span class="nA"></span> nichts selbst, und es wird nie mehr als ein Mittel kombiniert. Hält eine Erektion länger als 4 Stunden: sofort in die Notaufnahme.<br><br><b>Fotos:</b> nur zwischen euch beiden, am besten als Einmal-Ansicht, ohne Gesicht und nicht automatisch in Cloud oder Galerie sichern.
+    </div>
+  </div>
+</div>
+<div class="overlay hidden" id="ov"><div class="wrap" id="ovIn"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Daten ---------- */
+const STUFEN = [
+  {n:"Zärtlich", e:"💗", d:"Romantisch, langsam, viel Haut und Nähe."},
+  {n:"Prickelnd", e:"✨", d:"Verführung, Augenbinde, erste Spielzeuge."},
+  {n:"Heiß", e:"🔥", d:"Rollenspiel, Fesseln, Machtspiele."},
+  {n:"Versaut", e:"😈", d:"Ohne Hemmungen: Befehle, Kontrolle, Grenzen ausloten."},
+  {n:"Überraschung", e:"🎁", d:"Der Zufall entscheidet die Stufe – und kann jederzeit steigern."}
+];
+
+// {A} = er, {B} = sie. l = Stufe. sA/sB = Rollen bei Rollentausch.
+const ROLLEN = [
+  {l:1, t:"Das erste Date", A:"der schüchterne Fremde an der Bar", B:"die Frau, die ihn anspricht", h:"Tut so, als würdet ihr euch heute zum ersten Mal sehen. Wer bricht als Erstes die Rolle?"},
+  {l:1, t:"Flitterwochen", A:"der frisch gebackene Ehemann", B:"die Braut in der Hochzeitsnacht", h:"Alles ist neu und aufregend – nehmt euch viel Zeit."},
+  {l:2, t:"Massagesalon", A:"der Gast mit einer „Spezialbehandlung“ gebucht", B:"die Masseurin, die gern über die Liste hinausgeht", sA:"der Masseur, der gern über die Liste hinausgeht", sB:"der Gast mit einer „Spezialbehandlung“ gebucht", h:"Der Gast liegt, die Masseurin entscheidet, wie lang die Behandlung wirklich dauert."},
+  {l:2, t:"Fotoshooting", A:"der Fotograf", B:"das Model, das immer gewagtere Posen anbietet", sA:"das Model, das im Sessel immer gewagtere Posen anbietet", sB:"die Fotografin", h:"Wer fotografiert, gibt die Regieanweisungen. Der Fotograf bleibt sitzen und gibt Regieanweisungen."},
+  {l:2, t:"Die Anhalterin", A:"der Fahrer, der anhält", B:"die Anhalterin ohne Geld für die Fahrt", h:"Im geparkten Auto in der Garage – sie muss sich etwas einfallen lassen."},
+  {l:3, t:"Der Club", A:"der Stammgast im Sessel", B:"die neue Gastgeberin, die ihn heute persönlich betreut", sA:"der neue Gastgeber, der sie heute persönlich betreut", sB:"der Stammgast im Sessel", h:"Musik, gedimmtes Licht, Getränke. Der Gast darf Wünsche äußern – ob sie erfüllt werden, entscheidet die Gastgeberin."},
+  {l:3, t:"Das Verhör", A:"der Verdächtige", B:"die strenge Ermittlerin", sA:"der strenge Ermittler", sB:"die Verdächtige", h:"Handschellen, Augenbinde, Fragen. Jede falsche Antwort hat Folgen."},
+  {l:3, t:"Chef & Assistentin", A:"der Chef nach Feierabend", B:"die Assistentin, die eine Gehaltserhöhung will", sA:"der Assistent, der eine Gehaltserhöhung will", sB:"die Chefin nach Feierabend", h:"Wer am Schreibtisch sitzt, lässt sich überzeugen – der andere muss sich etwas einfallen lassen."},
+  {l:4, t:"Herrin & Diener", A:"der Diener, der nur auf Befehl handelt", B:"die Herrin, die alles bestimmt", h:"Er spricht sie nur mit „Herrin“ an. Sie bestimmt Tempo, Regeln und Belohnung."},
+  {l:4, t:"Gebieter & Gespielin", A:"der Gebieter auf seinem Thron", B:"die Gespielin, die ihm gehorcht", h:"Er bleibt sitzen und gibt Befehle, sie kommt zu ihm."},
+  {l:4, t:"Der Maskenball", A:"ein namenloser Gast mit Maske", B:"eine namenlose Fremde mit Maske", h:"Kein Name, keine Fragen, möglichst wenige Worte. Ihr kennt euch nicht."},
+  {l:4, t:"Die verlorene Wette", A:"der Gewinner", B:"die Verliererin, die ihm für eine Stunde gehört", sA:"der Verlierer, der ihr für eine Stunde gehört", sB:"die Gewinnerin", h:"Vorher eine Runde Karten oder Würfel – wer verliert, ist dran."}
+];
+
+const ORTE = [
+  {n:"Liebesschaukel im Keller", h:"Sie in der Schaukel, er sitzt davor und steuert – oder andersrum.", st:false},
+  {n:"Keller-Club", h:"Licht runter, Playlist an, Getränke bereitstellen. Sessel als Thron.", st:false},
+  {n:"Große Dusche", h:"Duschhocker und rutschfeste Matte rein, Wasser schön warm.", st:false},
+  {n:"Auto in der Garage", h:"Sitze zurück, Garagentor zu, Innenlicht gedimmt.", st:false},
+  {n:"Schlafzimmer", h:"Kerzen, frische Bettwäsche, Handy weg.", st:false},
+  {n:"Sofa im Wohnzimmer", h:"Decke, Kissen, Kamin- oder Kerzenlicht.", st:false},
+  {n:"Sessel als Thron", h:"Ein Sessel mitten im Raum – wer sitzt, regiert.", st:false},
+  {n:"Esstisch", h:"Er auf dem Stuhl, sie auf dem Tisch.", st:false},
+  {n:"Flur, an der Wand", h:"Schnell, ungeduldig, direkt nach der Haustür.", st:true}
+];
+
+const SPIELZEUG = [
+  {l:1, n:"Massageöl oder Massagekerze", h:"Vorher warm machen."},
+  {l:1, n:"Feder", h:"Langsam, überall."},
+  {l:1, n:"Augenbinde", h:"Wer nichts sieht, spürt doppelt."},
+  {l:2, n:"Vibrator", h:"Wer hält ihn – und wer bestimmt die Stufe?"},
+  {l:2, n:"Eiswürfel", h:"Abwechselnd kalt und warm."},
+  {l:2, n:"Masken", h:"Gesicht halb verdeckt, Hemmungen ganz weg."},
+  {l:3, n:"Handschellen", h:"Schlüssel griffbereit ablegen."},
+  {l:3, n:"Fesselband oder Seil", h:"Locker genug, dass zwei Finger drunter passen."},
+  {l:3, n:"Vibrator mit Fernbedienung", h:"Die Fernbedienung wechselt den Besitzer."},
+  {l:4, n:"Halsband und Leine", h:"Wer trägt es heute?"},
+  {l:4, n:"Paddel oder flache Hand", h:"Erst sanft, Ampel beachten."},
+  {l:4, n:"Augenbinde + Kopfhörer", h:"Totaler Sinnesentzug – dreimal klopfen = Stopp."},
+  {l:3, n:"VR-Brille (Quest 3)", h:"Akku laden, Film vorher aussuchen, Ton über Kopfhörer."},
+  {l:0, n:"Freie Wahl", h:"Wer verliert beim Schnick-Schnack-Schnuck, wählt aus eurer Kiste."}
+];
+
+const DRESS = [
+  "Nur Bademantel – darunter nichts", "Schwarz, alles schwarz", "Etwas Rotes, das sie lange nicht getragen hat",
+  "Hemd und nichts weiter", "Strümpfe und High Heels (im Sitzen erlaubt)", "Wie zum Ausgehen – aber ohne Unterwäsche",
+  "Spitze", "Leder oder Lack", "Maske ist Pflicht", "Dresscode: Überraschung für den anderen"
+];
+
+// st:true = er muss dabei länger stehen. min = Timer in Minuten
+const AUFGABEN = [
+  {l:1, m:10, t:"{B} massiert {A} zehn Minuten lang mit Öl. Kein Wort, nur Hände – und ab Minute fünf auch die Lippen."},
+  {l:1, m:3,  t:"Kuss-Countdown: drei Minuten nur küssen. Die Hände bleiben brav – wer zuerst schummelt, zieht ein Teil aus."},
+  {l:1, m:5,  t:"{A} flüstert {B} drei Dinge ins Ohr, die er an ihr am heißesten findet – und eine Sache, die er heute noch mit ihr vorhat."},
+  {l:1, m:5,  t:"Langsames Ausziehen: Abwechselnd zieht ihr dem anderen ein Kleidungsstück aus – zu jedem Teil gehört ein Kuss auf die frei gewordene Stelle."},
+  {l:1, m:8,  t:"{B} setzt sich auf {A}s Schoß. Ihr erzählt euch gegenseitig, welcher gemeinsame Moment euch bis heute nicht loslässt."},
+  {l:1, m:10, t:"{A} cremt {B} von Kopf bis Fuß ein – keine Stelle wird ausgelassen, aber er darf nur so langsam wie möglich arbeiten."},
+  {l:2, m:4,  t:"Striptease: {B} tanzt für {A} zu einem Song seiner Wahl. Er sitzt und darf nur zuschauen – Anfassen ist verboten."},
+  {l:2, m:5,  t:"{A} bekommt die Augenbinde. {B} verwöhnt ihn fünf Minuten mit Händen, Lippen und einem Spielzeug – er muss raten, was es ist."},
+  {l:2, m:5,  t:"Eis und Feuer: {A} wechselt bei {B} zwischen Eiswürfel und warmem Atem ab. Sie darf sich nicht bewegen."},
+  {l:2, m:6,  t:"{A} führt das Spielzeug, {B} darf nur „mehr“ oder „weniger“ sagen. Nach drei Minuten wird getauscht."},
+  {l:2, m:8,  t:"Duschrunde: {A} sitzt auf dem Hocker, {B} seift ihn von Kopf bis Fuß ein – sehr gründlich. Danach ist sie dran."},
+  {l:2, m:5,  t:"{B} sitzt rittlings auf {A}s Schoß, beide noch halb angezogen. Fünf Minuten nur reiben und küssen – ausziehen verboten."},
+  {l:2, m:3,  t:"{B} schickt {A} eine Sprachnachricht aus dem Nebenzimmer, was sie gleich mit ihm macht. Erst danach darf sie reinkommen."},
+  {l:3, m:10, t:"{A}s Hände werden an der Schaukel oder am Sessel fixiert. {B} hat zehn Minuten, in denen sie mit ihm machen darf, was sie will."},
+  {l:3, m:8,  t:"{B} trägt Handschellen auf dem Rücken. Sie darf {A} nur mit Lippen und Zunge verwöhnen – er bestimmt das Tempo."},
+  {l:3, m:10, t:"An der Grenze: {B} bringt {A} dreimal bis kurz vor den Höhepunkt – und hört dann jedes Mal auf. Erst beim vierten Mal darf er."},
+  {l:3, m:8,  t:"Schaukelrunde: {B} sitzt in der Schaukel, {A} sitzt davor und zieht sie so oft zu sich heran, wie er will."},
+  {l:3, m:5,  t:"Befehlsrunde: {A} gibt {B} fünf Minuten lang Befehle. Sie gehorcht – jede Weigerung kostet ein Kleidungsstück oder eine Strafe."},
+  {l:3, m:4,  t:"Dirty Talk: {B} beschreibt {A} in allen Einzelheiten, was sie gleich mit ihm vorhat. Er darf sie erst anfassen, wenn sie fertig ist."},
+  {l:3, m:6,  t:"Fernbedienung: {B} trägt das Spielzeug, {A} hat die Fernbedienung. Sie muss dabei so tun, als wäre nichts – zum Beispiel beim Abendessen."},
+  {l:3, m:5,  t:"{A} drückt {B} gegen die Wand und hält ihre Hände über dem Kopf fest. Fünf Minuten, kein Entkommen.", st:true},
+  {l:4, m:15, t:"Herrinnen-Viertelstunde: {B} bestimmt fünfzehn Minuten lang alles. {A} antwortet nur mit „Ja, Herrin“. Jede andere Antwort wird bestraft."},
+  {l:4, m:10, t:"Totale Dunkelheit: {B} trägt Augenbinde und Kopfhörer und ist in der Schaukel fixiert. {A} entscheidet alles – sie weiß nie, was als Nächstes kommt."},
+  {l:4, m:10, t:"Nicht bewegen: {A} sitzt mit Handschellen. Zehn Minuten darf er keinen Muskel rühren, egal was {B} mit ihm anstellt. Jede Bewegung = ein Klaps."},
+  {l:4, m:8,  t:"Leine: {B} trägt Halsband und Leine. {A} sitzt auf seinem Thron und holt sie Stück für Stück zu sich heran – auf Knien."},
+  {l:4, m:10, t:"Betteln: {B} darf erst kommen, wenn sie {A} überzeugend genug darum gebeten hat. Er entscheidet, ob es reicht."},
+  {l:4, m:15, t:"Maskenball: Beide mit Maske, kein Name, kein Wort. Fremde, die sich zum ersten Mal berühren – alles läuft nur über Blicke und Hände."},
+  {l:4, m:10, t:"Spielzeugkiste: {A} wählt drei Spielzeuge aus eurer Kiste und benutzt sie nacheinander bei {B} – sie bekommt vorher nicht gesagt, welche."},
+  {l:4, m:6,  t:"Strafbank: {B} legt sich über {A}s Schoß. Er zählt, sie zählt laut mit – wer sich verzählt, fängt von vorn an."},
+  {l:4, m:10, t:"Rollenwechsel mitten im Spiel: Wer gerade bestimmt hat, wird gefesselt. Der andere hat jetzt zehn Minuten Rache."},
+  {l:3, m:10, t:"Ölringen: Altes Laken oder Plane aufs Bett, eine ganze Flasche Massageöl. Ihr reibt euch gegenseitig ein, bis keiner den anderen mehr festhalten kann."},
+  {l:3, m:8,  t:"Wachsspiel: {A} lässt {B} warmes Wachs einer echten Massagekerze auf Rücken und Bauch tropfen und massiert es danach ein. Vorher am eigenen Handgelenk testen."},
+  {l:3, m:6,  t:"Sektempfang: {B} trinkt Sekt von {A}s Körper, und was übrig bleibt, gießt sie ihm über die Brust. Danach leckt sie ihn sauber."},
+  {l:4, m:15, t:"Orgasmuskontrolle: {B} darf heute nur mit Erlaubnis kommen. {A} hält den Vibrator und fragt sie dreimal, ob sie so weit ist. Die ersten beiden Male lautet die Antwort Nein."},
+  {l:4, m:10, t:"Bis es nass wird: Handtücher drunter. {A} verwöhnt {B} mit Händen und Vibrator und hört erst auf, wenn wirklich alles klitschnass ist."},
+  {l:4, m:10, t:"Duschstrahl: {A} sitzt auf dem Hocker und hat den Duschkopf in der Hand, {B} muss stillhalten, egal wohin der Strahl wandert. Wer zuckt, bekommt ihn kalt."},
+  {l:4, m:12, t:"Hilflos: {A} sitzt mit Augenbinde und gefesselten Händen im Sessel. {B} hat Eiswürfel, Wachs, Feder und Vibrator, und er weiß nie, was als Nächstes kommt."},
+  {l:4, m:10, t:"Doppelt verwöhnt: {B} benutzt bei sich selbst ein Spielzeug, während sie {A} mit dem Mund verwöhnt. Wer zuerst kommt, verliert und schuldet dem anderen einen Wunsch."},
+  {l:4, m:5,  ns:true, t:"Warmer Regen: {A} sitzt auf dem Duschhocker, {B} steht über ihm. Sie entscheidet, wann und wohin. Danach wird gemeinsam gründlich abgeduscht."},
+  {l:4, m:30, ns:true, t:"Vorgeglüht: {B} trinkt eine halbe Stunde vorher zwei große Gläser Wasser. Dann ab in die Dusche, {A} auf dem Hocker – und sie lässt ihn warten, so lange sie es aushält."},
+  {l:4, m:10, ns:true, bett:true, t:"Nasses Bett: {A} liegt auf dem Rücken auf der vorbereiteten Unterlage, {B} kniet über ihm und lässt es laufen, wann sie will. Danach gemeinsam unter die Dusche."},
+  {l:4, m:10, ns:true, bett:true, t:"Blind erwischt: {A} liegt mit Augenbinde auf der vorbereiteten Unterlage. {B} verwöhnt ihn und sagt nicht, wann es passiert – nur dass es passiert."},
+  {l:4, m:10, ns:true, bett:true, t:"Ausgeritten: {B} sitzt auf {A} und lässt es mittendrin einfach laufen. Danach Bett abziehen und zusammen duschen."},
+  {l:3, m:15, t:"VR-Überfall: {A} setzt die Quest auf und schaut einen Film seiner Wahl. Irgendwann kommt {B} dazu, ohne dass er es merkt, und übernimmt."},
+  {l:4, m:15, t:"VR-Befehl: {B} schickt {A} mit der Quest in den Sessel. Er darf sich nur selbst anfassen, bis sie dazukommt. Wann das ist, entscheidet sie."},
+  {l:4, m:10, t:"Zuschauerin: {A} trägt die Quest, {B} sitzt ihm gegenüber und schaut zu. Sie sagt, wann er schneller wird, langsamer – oder aufhört."},
+  {l:2, m:120, t:"Foto-Teaser: Bis zum Abend schickt {B} {A} alle zwei Stunden ein Foto – jedes zeigt ein bisschen mehr als das letzte."},
+  {l:2, m:30, t:"Foto-Duell: Ihr schickt euch abwechselnd ein Foto, das den anderen heiß macht. Wer zuerst schwach wird und anruft, verliert und erfüllt dem anderen einen Wunsch."},
+  {l:3, m:15, t:"{A} schickt {B} ein Foto, wie er auf sie wartet. Je nachdem, wie es ihr gefällt, kommt sie sofort – oder lässt ihn noch zappeln."},
+  {l:4, m:8,  t:"{A} nimmt {B} im Stehen an der Wand – ohne Vorwarnung, ohne Vorspiel.", st:true}
+];
+
+const BEFEHLE = [
+  "Geh in den Keller, setz dich in den Sessel und fass dich an. Aber du kommst nicht, bevor ich da bin.",
+  "Quest auf, Film an, Tür bleibt offen. Ich komme, wann ich will – und du merkst es erst, wenn es so weit ist.",
+  "Zieh dich aus, Augenbinde auf und warte auf dem Bett. Ich komme in zehn Minuten. Vielleicht.",
+  "Verwöhn dich selbst, während ich zusehe. Sage ich „Stopp“, hörst du sofort auf.",
+  "Bring dich dreimal bis kurz vor Schluss und schreib mir jedes Mal eine Nachricht. Danach entscheide ich.",
+  "Ab jetzt fasst du bis heute Abend nichts an – weder mich noch dich.",
+  "Setz dich in die Dusche auf den Hocker und warte. Wasser bleibt aus, bis ich komme.",
+  "Heute Abend trägst du nur, was ich dir aufs Bett lege.",
+  "Wenn dein Handy einmal klingelt, lässt du alles liegen und kommst zu mir. Sofort.",
+  "Schick mir ein Foto, wie du auf mich wartest. Wenn es mir gefällt, komme ich.",
+  "Setz dich in die Schaukel, Augen zu. Du bewegst dich erst, wenn ich dich berühre.",
+  "Du schaust mir zu und darfst dich dabei nur anfassen, wenn ich nicke."
+];
+const FOTOS = [
+  {an:"A", t:"{B} schickt {A} ein Foto von dem, was sie gerade drunter trägt."},
+  {an:"A", t:"{B} schickt {A} ein Foto im Spiegel – ohne Gesicht, mit viel Haut."},
+  {an:"A", t:"{B} schickt {A} ein Foto vom Spielzeug, das sie für heute Abend ausgesucht hat. Ohne Kommentar."},
+  {an:"A", t:"{B} schickt {A} ein Detailfoto. Er muss raten, welche Stelle es ist – liegt er falsch, bekommt er keins mehr bis zum Abend."},
+  {an:"A", t:"{B} schickt {A} ein Foto vom vorbereiteten Ort für den Spielabend – und dazu nur einen Satz, was dort passieren wird."},
+  {an:"B", t:"{A} schickt {B} ein Foto, das zeigt, wie sehr er an sie denkt."},
+  {an:"B", t:"{A} schickt {B} ein Foto von sich im Hemd und sonst nichts."},
+  {an:"B", t:"{A} schickt {B} ein Foto aus der Dusche. Sie entscheidet, ob sie dazukommt."},
+  {an:"B", t:"{A} schickt {B} ein Foto von seinen gefesselten Händen – Schlüssel liegt daneben. Den Rest überlässt er ihrer Fantasie."},
+  {an:"AB", t:"Foto-Ping-Pong: Wer ein Foto bekommt, muss innerhalb von 15 Minuten eins zurückschicken – jedes etwas gewagter als das vorige."},
+  {an:"AB", t:"Morgen-Gruß: Ihr schickt euch morgen früh ein Foto aus dem Bett, bevor ihr aufsteht."}
+];
+const MED_HEIM = [
+  "🤫 Heimlich: {B} gibt {A} die Tablette ohne Ankündigung, zum Beispiel im Getränk beim Abendessen. Er merkt es erst, wenn sie wirkt.",
+  "🤫 Heimlich: {B} bringt {A} einen Drink und sagt kein Wort. Ob etwas drin ist, erfährt er später.",
+  "🤫 Heimlich: {B} entscheidet allein, wann. {A} weiß nur: Heute ist Spielabend."
+];
+
+const EINLADUNG = {
+  A:[
+    "Liebe {B},\n{zeit} erwartet dich jemand. Ort: {ort}.\nDu bist {rB}.\nDresscode: {dress}.\nKomm pünktlich. Und komm nicht allein auf Ideen – die habe ich schon.\n{A}",
+    "Einladung für {B}\n🕘 {zeit}\n📍 {ort}\n🎭 Deine Rolle: {rB}\n👗 {dress}\nAlles Weitere erfährst du vor Ort.",
+    "{B}, ich habe etwas mit dir vor.\nWann: {zeit}. Wo: {ort}. Du bist {rB} – ich bin {rA}.\nZieh an: {dress}.\nUnd stell dich darauf ein, dass es spät wird."
+  ],
+  B:[
+    "Lieber {A},\n{zeit} hast du einen Termin. Ort: {ort}.\nDu bist {rA}.\nDresscode: {dress}.\nSei pünktlich – ich warte nicht gern.\n{B}",
+    "Einladung für {A}\n🕘 {zeit}\n📍 {ort}\n🎭 Deine Rolle: {rA}\n👗 {dress}\nDen Rest bestimme ich.",
+    "{A}, du gehörst mir.\nWann: {zeit}. Wo: {ort}. Du bist {rA}, ich bin {rB}.\nDresscode: {dress}.\nKeine Fragen."
+  ]
+};
+
+const MED_RIT = {
+  skat:[
+    "Krankenschwester: {B} trägt Kittel und Handschuhe und erklärt {A} jeden Handgriff, als wäre er ihr Patient.",
+    "Blind: {A} trägt die Augenbinde. {B} bereitet alles vor und sagt nur ein Wort: „Jetzt.“",
+    "Countdown: Nach der Spritze startet der Timer. Bis er abgelaufen ist, darf {A} {B} nur ansehen, nicht anfassen.",
+    "Ärztin & Patient: {B} macht vorher eine „Untersuchung“ und entscheidet, wann die Behandlung beginnt."
+  ],
+  tab:[
+    "Serviert: {B} bringt die Tablette mit einem Glas Wasser auf einem Tablett, schon im Dresscode.",
+    "Mit einem Kuss: {B} legt sie {A} mit einem Kuss auf die Zunge.",
+    "Beim Abendessen: {B} legt sie wortlos neben seinen Teller. Ab da weiß {A}: Heute passiert etwas.",
+    "Befehl: {B} reicht sie ihm und sagt nur „Nimm.“ Ab jetzt läuft die Zeit."
+  ]
+};
+const MED_NAME = {skat:"SKAT-Spritze", tab:"Tablette"};
+const medTyp = () => $("med").value;
+const medVor = () => parseInt($("medVor").value) || (medTyp()==="skat"?15:45);
+const pad = n => String(n).padStart(2,"0");
+function minus(zeit, min){ const [h,m]=(zeit||"21:00").split(":").map(Number); const t=((h*60+m-min)%1440+1440)%1440; return pad(Math.floor(t/60))+":"+pad(t%60); }
+function medRecent(){ const t=load("medGabe",null); return t && Date.now()-t < 24*3600*1000 ? new Date(t) : null; }
+const heimOn = () => medTyp()==="tab" && $("medHeim").checked;
+const medPool = () => medTyp()==="none" ? [] : MED_RIT[medTyp()].concat(medTyp()==="tab"?MED_HEIM:[]);
+function genMed(heimlich){ const t=medTyp(); if(t==="none") return null; return pick(heimlich&&heimOn() ? MED_RIT.tab.concat(MED_HEIM,MED_HEIM) : MED_RIT[t]); }
+
+/* ---------- Zustand ---------- */
+let stufe = 1, aktStufe = 1, s = {}, taskNr = 0, vA = 2, vB = 2, einlIdx = 0;
+let timer = null, rest = 0, dauer = 0;
+const $ = id => document.getElementById(id);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const nameA = () => $("nameA").value.trim() || "Er";
+const nameB = () => $("nameB").value.trim() || "Sie";
+
+function store(k,v){try{localStorage.setItem("spielabend_"+k,JSON.stringify(v))}catch(e){}}
+function load(k,d){try{const v=localStorage.getItem("spielabend_"+k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
+
+function fill(t){return t.replaceAll("{A}",nameA()).replaceAll("{B}",nameB())}
+function updNames(){document.querySelectorAll(".nA").forEach(e=>e.textContent=nameA());document.querySelectorAll(".nB").forEach(e=>e.textContent=nameB());}
+
+/* ---------- Stufen ---------- */
+function renderLevels(){
+  $("levels").innerHTML = STUFEN.map((x,i)=>`<div class="lvl ${stufe===i+1?'on':''}" data-l="${i+1}"><b>${x.e}</b>${x.n}</div>`).join("");
+  $("lvldesc").textContent = STUFEN[stufe-1].d;
+  document.querySelectorAll(".lvl").forEach(el=>el.onclick=()=>{stufe=+el.dataset.l;store("stufe",stufe);renderLevels();});
+}
+
+/* ---------- Würfeln ---------- */
+const sitz = () => $("sitz").checked;
+function poolStufe(arr, l){ // bevorzugt genau Stufe l, Rest knapp darunter
+  let p = arr.filter(x=>x.l===l);
+  if (l>1) p = p.concat(arr.filter(x=>x.l===l-1).slice(0, Math.ceil(p.length/3)));
+  return p.length?p:arr;
+}
+function genRolle(l){
+  const r = pick(poolStufe(ROLLEN, l));
+  const t = r.sA && $("tausch").checked && Math.random()<0.35;
+  return {t:r.t+(t?" (getauscht)":""), h:r.h, A: t? r.sA : r.A, B: t? r.sB : r.B};
+}
+const genOrt = () => pick(ORTE.filter(o=>!(sitz()&&o.st)));
+const genToy = l => pick(SPIELZEUG.filter(t=>t.l===0||(t.l<=l&&t.l>=l-1)));
+const genDress = () => pick(DRESS);
+const taskOk = a => !(sitz()&&a.st) && !(a.ns&&!$("ns").checked);
+function genTask(l, ex){
+  let p = poolStufe(AUFGABEN, l).filter(taskOk);
+  if (ex && p.length>1) p = p.filter(a=>a.t!==ex.t);
+  return pick(p);
+}
+function rollRolle(){ s.rolle = genRolle(aktStufe); }
+function rollOrt(){ s.ort = genOrt(); }
+function rollToy(){ s.toy = genToy(aktStufe); }
+function rollDress(){ s.dress = genDress(); }
+function rollTask(){
+  if (s.plan && s.plan.idx < s.plan.tasks.length) s.task = {...s.plan.tasks[s.plan.idx++], plan:true};
+  else s.task = genTask(aktStufe, s.task);
+  setTimer(s.task.m);
+}
+function vetoTask(){ s.task = genTask(aktStufe, s.task); setTimer(s.task.m); }
+
+function rollAll(){
+  if (gesperrt()){ toast("Gesperrt bis zum Spielabend"); return; }
+  aktStufe = stufe===5 ? 1+Math.floor(Math.random()*4) : stufe;
+  taskNr = 1; vA = 2; vB = 2; s = {};
+  rollRolle(); rollOrt(); rollToy(); rollDress(); rollTask();
+  einlIdx = Math.floor(Math.random()*3);
+  render(); makeEinladung();
+  $("result").classList.remove("hidden");
+  $("result").scrollIntoView({behavior:"smooth"});
+  if (stufe===5) toast("Überraschung: Stufe „"+STUFEN[aktStufe-1].n+"“");
+}
+
+function render(){
+  updNames();
+  const r = s.rolle;
+  $("rRolle").innerHTML = `<b>${r.t}</b><br>${nameA()}: ${r.A}<br>${nameB()}: ${r.B}`;
+  $("rRolleH").textContent = r.h;
+  $("rOrt").textContent = s.ort.n; $("rOrtH").textContent = s.ort.h;
+  $("rToy").textContent = s.toy.n; $("rToyH").textContent = s.toy.h;
+  $("rDress").textContent = s.dress;
+  renderMed();
+  $("tNr").textContent = "Aufgabe "+taskNr+" · "+(s.task.plan ? "🤫 aus "+wer(s.plan.who)+"s Plan" : STUFEN[aktStufe-1].e+" "+STUFEN[aktStufe-1].n);
+  $("tText").textContent = fill(s.task.t);
+  $("tBadges").innerHTML = `<span class="badge">⏱ ${s.task.m} Min.</span>` + (sitz()?`<span class="badge">🪑 ohne Stehen</span>`:"")+(s.task.ns?(s.task.bett?`<span class="badge">🛏 wasserdichte Unterlage + Handtücher</span>`:`<span class="badge">🚿 nur in der Dusche</span>`):"")
+    +(s.plan&&s.plan.idx<s.plan.tasks.length?`<span class="badge">🤫 noch ${s.plan.tasks.length-s.plan.idx} geplant</span>`:"");
+  $("vA").textContent=vA; $("vB").textContent=vB;
+  $("vetoA").disabled = vA<=0; $("vetoB").disabled = vB<=0;
+  $("hotter").disabled = aktStufe>=4; $("hotter").style.opacity = aktStufe>=4?.4:1;
+}
+
+function renderMed(){
+  const t = medTyp();
+  $("medRow").classList.toggle("hidden", t==="none");
+  if (t==="none") return;
+  if (!s.med || !medPool().includes(s.med)) s.med = genMed(false);
+  const geheim = MED_HEIM.includes(s.med);
+  $("medDone").classList.toggle("hidden", geheim);
+  if (geheim){
+    $("rMedK").textContent = "🤫 Geheimsache";
+    $("rMed").textContent = "Darum kümmert sich " + nameB() + ".";
+    $("rMedH").textContent = "Heute nimmst du nichts selbst.";
+    return;
+  }
+  $("rMedK").textContent = MED_NAME[t] + " – Ritual";
+  $("rMed").textContent = fill(s.med);
+  const r = medRecent(), zeit = $("zeit").value || "21:00";
+  $("rMedH").textContent = r
+    ? "⚠️ Schon gegeben um "+pad(r.getHours())+":"+pad(r.getMinutes())+" Uhr – heute keine zweite Dosis."
+    : "Gabe um "+minus(zeit, medVor())+" Uhr, wenn ihr um "+zeit+" Uhr startet. Danach ✓ tippen.";
+}
+$("medDone").onclick=()=>{
+  if (medRecent() && !confirm("Laut App wurde in den letzten 24 Stunden schon etwas gegeben. Trotzdem neu eintragen?")) return;
+  store("medGabe", Date.now()); renderMed(); toast("💊 Eingetragen");
+};
+$("med").onchange=()=>{ store("med",$("med").value); $("medOpt").classList.toggle("hidden",medTyp()==="none"); $("medHeimRow").classList.toggle("hidden",medTyp()!=="tab"); $("medVor").value=""; store("medVor",""); s.med=null; if(s.task) render(); };
+$("medHeim").onchange=()=>store("medHeim",$("medHeim").checked);
+$("medVor").oninput=()=>{ store("medVor",$("medVor").value); if(s.task) renderMed(); };
+
+/* ---------- Timer ---------- */
+function fmt(sek){return String(Math.floor(sek/60)).padStart(2,"0")+":"+String(sek%60).padStart(2,"0")}
+function setTimer(min){ clearInterval(timer); timer=null; dauer=min*60; rest=dauer; $("clock").textContent=fmt(rest); $("tStart").textContent="▶︎ Start"; }
+$("tStart").onclick=()=>{
+  if (timer){clearInterval(timer);timer=null;$("tStart").textContent="▶︎ Weiter";return;}
+  $("tStart").textContent="⏸ Pause";
+  timer=setInterval(()=>{
+    rest--; $("clock").textContent=fmt(Math.max(rest,0));
+    if (rest<=0){clearInterval(timer);timer=null;$("tStart").textContent="▶︎ Start";
+      try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}
+      beep(); toast("⏰ Zeit ist um!");}
+  },1000);
+};
+$("tReset").onclick=()=>setTimer(s.task?s.task.m:0);
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=660;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+.3);o.start(c.currentTime+t);o.stop(c.currentTime+t+.3);});}catch(e){}}
+
+/* ---------- Einladung ---------- */
+function einlText(von, idx, zeit, src, datum){
+  const t = EINLADUNG[von][idx % EINLADUNG[von].length];
+  const wann = (datum ? fmtD(datum)+" um " : "heute um ") + (zeit||"21:00") + " Uhr";
+  return t.replaceAll("{zeit}",wann).replaceAll("{ort}",src.ort.n).replaceAll("{dress}",src.dress)
+    .replaceAll("{rA}",src.rolle.A).replaceAll("{rB}",src.rolle.B).replaceAll("{A}",nameA()).replaceAll("{B}",nameB());
+}
+function makeEinladung(){ $("einladung").value = einlText($("von").value, einlIdx, $("zeit").value, s); }
+async function teilen(text){
+  if (navigator.share){try{await navigator.share({text});return;}catch(e){if(e.name==="AbortError")return;}}
+  try{await navigator.clipboard.writeText(text);toast("Kopiert – jetzt in WhatsApp einfügen");}
+  catch(e){window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");}
+}
+$("neuEinl").onclick=()=>{einlIdx++;makeEinladung();};
+$("zeit").onchange=()=>{makeEinladung(); if(s.task) renderMed();}; $("von").onchange=makeEinladung;
+$("teilen").onclick=()=>teilen($("einladung").value);
+
+/* ---------- Geheimer Plan ---------- */
+const wer = w => w==="A"?nameA():nameB();
+const anderer = w => w==="A"?nameB():nameA();
+const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let draft = null;
+const ladePlan = () => load("plan", null);
+function ov(html){ $("ovIn").innerHTML = html; $("ov").classList.remove("hidden"); $("ov").scrollTop = 0; document.body.style.overflow="hidden"; }
+function closeOv(){ document.body.style.overflow=""; $("ov").classList.add("hidden"); $("ovIn").innerHTML = ""; }
+function pinOk(p){ if(!p||!p.pin) return true; const e = prompt("PIN von "+wer(p.who)+":"); if(e===p.pin) return true; if(e!==null) toast("Falsche PIN"); return false; }
+
+function neuerEntwurf(w){
+  const l = stufe===5 ? 3+Math.floor(Math.random()*2) : stufe;
+  const tr = termin(); const d = {who:w, pin:"", vorlauf:tr&&tr.rhythmus?0:1, datum:tr&&tr.rhythmus?tr.datum:plusTage(7), med:genMed(w==="B"), stufe:l, rolle:genRolle(l), ort:genOrt(), toy:genToy(l), dress:genDress(), tasks:[], zeit:"21:00"};
+  for (let i=0;i<3;i++){ let t, n=0; do{ t = genTask(l); n++; } while(d.tasks.some(x=>x.t===t.t) && n<20); d.tasks.push({...t}); }
+  return d;
+}
+function planStart(){
+  const p = ladePlan();
+  if (p){ if(!pinOk(p)) return; draft = p; wegschauen(); return; }
+  ov(`<div class="big">🤫</div><div class="center">Wer schmiedet heute den Plan?</div>
+    <button class="btn" onclick="planWer('A')">${esc(nameA())}</button>
+    <button class="btn" style="margin-top:8px" onclick="planWer('B')">${esc(nameB())}</button>
+    <button class="btn sec" style="margin-top:8px" onclick="closeOv()">Abbrechen</button>`);
+}
+function planWer(w){ draft = neuerEntwurf(w); wegschauen(); }
+function wegschauen(){
+  ov(`<div class="big">🙈</div><div class="center"><b style="color:var(--text);font-size:1.2rem">${esc(anderer(draft.who))}, bitte wegschauen!</b><br>Ab jetzt darf nur noch ${esc(wer(draft.who))} aufs Display sehen.</div>
+    <button class="btn" onclick="planEdit()">Ich bin ${esc(wer(draft.who))} – Plan öffnen</button>
+    <button class="btn sec" style="margin-top:8px" onclick="closeOv()">Abbrechen</button>`);
+}
+function sync(){
+  if ($("pZeit")) draft.zeit = $("pZeit").value || "21:00";
+  if ($("pDatum") && $("pDatum").value) draft.datum = $("pDatum").value;
+  if ($("pPin")) draft.pin = $("pPin").value.trim();
+}
+function planEdit(){
+  const d = draft;
+  const lv = [1,2,3,4].map(i=>`<div class="lvl ${d.stufe===i?'on':''}" onclick="planStufe(${i})"><b>${STUFEN[i-1].e}</b>${STUFEN[i-1].n}</div>`).join("");
+  const row = (ico,k,v,h,key)=>`<div class="item"><div class="ico">${ico}</div><div class="t"><div class="k">${k}</div><div class="v">${v}</div>${h?`<div class="h">${esc(h)}</div>`:""}</div><button class="re" onclick="planRe('${key}')">↻</button></div>`;
+  const tasks = d.tasks.map((t,i)=>`<div class="item"><div class="ico">${i+1}</div><div class="t"><div class="v">${esc(fill(t.t))}</div><div class="h">⏱ ${t.m} Min.${t.ns?(t.bett?" · 🛏 Bett vorbereiten":" · 🚿 Dusche"):""}${t.own?" · ✍︎ eigene Idee":""}${t.befehl?" · 👑 Befehl":""}</div></div><button class="re" onclick="planTaskRe(${i})">↻</button><button class="re" onclick="planTaskDel(${i})">✕</button></div>`).join("") || `<div class="h" style="color:var(--muted)">Noch keine Aufgaben.</div>`;
+  ov(`<header><h1>Dein geheimer Plan</h1><p>Nur für ${esc(wer(d.who))}. Die Aufgaben werden erst beim Spielen einzeln aufgedeckt.</p></header>
+    <div class="box"><div class="label">Wann? ${rhy()&&rhy().art!=="aus" ? "Nächster Rhythmus-Termin oder Vorlauf" : "Vorlauf"}</div>
+      <div class="lv4">${[1,2,3,4].map(w=>`<div class="lvl ${d.vorlauf===w?'on':''}" onclick="planWoche(${w})"><b>${w}</b>${w===1?"Woche":"Wochen"}</div>`).join("")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div><label style="font-size:.78rem;color:var(--muted)">Datum</label><input type="date" id="pDatum" min="${heute()}" value="${esc(d.datum||plusTage(7))}" style="width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;font-size:.95rem"></div>
+        <div><label style="font-size:.78rem;color:var(--muted)">Uhrzeit</label><input type="time" id="pZeit" value="${esc(d.zeit)}"></div>
+      </div>
+      <button class="btn sec" style="margin-top:8px" onclick="planIcsPrep()">📅 Private Erinnerung zur Vorbereitung</button>
+    </div>
+    <div class="box"><div class="label">Stufe</div><div class="lv4">${lv}</div></div>
+    <div class="box"><div class="label">Szenario</div>
+      ${row("🎭","Rollen",`<b>${esc(d.rolle.t)}</b><br>${esc(nameA())}: ${esc(d.rolle.A)}<br>${esc(nameB())}: ${esc(d.rolle.B)}`,d.rolle.h,"rolle")}
+      ${row("📍","Ort",esc(d.ort.n),d.ort.h,"ort")}
+      ${row("🗝️","Spielzeug",esc(d.toy.n),d.toy.h,"toy")}
+      ${row("👗","Dresscode",esc(d.dress),"","dress")}
+      ${medTyp()!=="none" ? row("💊",MED_NAME[medTyp()]+" – Ritual",esc(fill(d.med && medPool().includes(d.med) && (d.who==="B"||!MED_HEIM.includes(d.med)) ? d.med : (d.med=genMed(d.who==="B")))),MED_HEIM.includes(d.med) ? "Nur du siehst das. "+nameA()+" bekommt beim Spielen nur angezeigt: „Darum kümmert sich "+nameB()+".“" : "Gabe um "+minus(d.zeit,medVor())+" Uhr – bis dahin bleibt das Ritual dein Geheimnis.","med") : ""}
+    </div>
+    <div class="box"><div class="label">Aufgaben in dieser Reihenfolge</div>${tasks}
+      <div class="row2"><button class="btn sec" onclick="planTaskAdd()">🎲 Aufgabe dazuwürfeln</button><button class="btn sec" onclick="planBefehl()">👑 Befehl dazu</button></div>
+      <div style="margin-top:12px"><textarea id="pOwn" style="min-height:80px" placeholder="Eigene Idee, z. B. was nur du dir für heute ausgedacht hast …"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><input type="text" id="pOwnMin" inputmode="numeric" placeholder="Minuten (z. B. 10)"><button class="btn sec" onclick="planOwn()">✍︎ Hinzufügen</button></div></div>
+    </div>
+    <div class="box"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="grid-column:1/3"><label style="font-size:.78rem;color:var(--muted)">PIN (optional)</label><input type="password" id="pPin" inputmode="numeric" maxlength="8" value="${esc(d.pin)}" placeholder="z. B. 1234"></div>
+    </div><p style="font-size:.78rem;color:var(--muted);margin-top:8px">Mit PIN kann ${esc(anderer(d.who))} den Plan nicht heimlich öffnen. Zum Spielen braucht ihr sie nicht.</p></div>
+    <button class="btn" onclick="planSiegeln()">🔒 Plan versiegeln</button>
+    <button class="btn sec" style="margin-top:8px" onclick="closeOv()">Abbrechen</button>`);
+}
+function planStufe(l){ sync(); draft.stufe=l; draft.toy=genToy(l); draft.tasks=draft.tasks.map(t=>t.own?t:{...genTask(l)}); planEdit(); }
+function planRe(k){ sync(); const l=draft.stufe; if(k==="rolle")draft.rolle=genRolle(l); if(k==="ort")draft.ort=genOrt(); if(k==="toy")draft.toy=genToy(l); if(k==="dress")draft.dress=genDress(); if(k==="med")draft.med=genMed(draft.who==="B"); planEdit(); }
+function planTaskRe(i){ sync(); draft.tasks[i]={...genTask(draft.stufe, draft.tasks[i])}; planEdit(); }
+function planTaskDel(i){ sync(); draft.tasks.splice(i,1); planEdit(); }
+function planTaskAdd(){ sync(); let t,n=0; do{t=genTask(draft.stufe);n++;}while(draft.tasks.some(x=>x.t===t.t)&&n<20); draft.tasks.push({...t}); planEdit(); }
+function planWoche(w){ sync(); draft.vorlauf=w; draft.datum=plusTage(7*w); planEdit(); }
+function planBefehl(){ sync(); draft.tasks.push({t:"👑 Befehl von {B}: „"+pick(BEFEHLE)+"“", m:15, befehl:true}); planEdit(); }
+function planIcsPrep(){ sync(); const z = medTyp()!=="none" ? minus(draft.zeit, medVor()) : minus(draft.zeit, 60); ics(draft.datum, z, 15, "Vorbereitung", "Erinnerung"); }
+function planOwn(){ sync(); const t=$("pOwn").value.trim(); if(!t){toast("Erst etwas eintippen");return;} const m=parseInt($("pOwnMin").value)||10; draft.tasks.push({t, m, own:true}); planEdit(); }
+function planSiegeln(){
+  sync();
+  if (!draft.tasks.length){ toast("Mindestens eine Aufgabe einplanen"); return; }
+  if (!draft.datum || tageBis(draft.datum)<0){ toast("Bitte ein Datum ab heute wählen"); return; }
+  store("plan", draft); draft=null; closeOv(); updateLock(); toast("Plan versiegelt 🔒");
+}
+const heute = () => { const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+const plusTage = n => { const d=new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+const fmtD = d => new Date(d+"T12:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
+const tageBis = d => Math.round((new Date(d+"T12:00")-new Date(heute()+"T12:00"))/864e5);
+const tageTxt = n => n===1 ? "1 Tag" : n+" Tage";
+const WT = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const rhy = () => load("rhythmus", null);
+function nterTag(y, m, wd, nr){
+  let d;
+  if (nr===-1){ d = new Date(y, m+1, 0, 12); while (d.getDay()!==wd) d.setDate(d.getDate()-1); return d; }
+  d = new Date(y, m, 1, 12); while (d.getDay()!==wd) d.setDate(d.getDate()+1); d.setDate(d.getDate()+7*(nr-1)); return d;
+}
+function naechsterRhythmus(){
+  const r = rhy(); if (!r || r.art==="aus") return null;
+  const today = new Date(heute()+"T12:00");
+  if (r.art[0]==="w"){
+    const n = +r.art[1], d = new Date(r.ab+"T12:00"); let k = 0;
+    while (d < today){ d.setDate(d.getDate()+7*n); k++; }
+    return {datum: iso(d), idx: k};
+  }
+  const [sy, sm] = r.start.split("-").map(Number); let y = today.getFullYear(), m = today.getMonth();
+  for (let i=0; i<14; i++){
+    const d = nterTag(y, m, r.tag, r.nr);
+    if (d >= today) return {datum: iso(d), idx: (y-sy)*12 + (m-(sm-1))};
+    if (++m > 11){ m = 0; y++; }
+  }
+  return null;
+}
+function planerFuer(idx){ const w = rhy().wer; return w.length===1 ? w : w[idx%2]; }
+function rhyText(r){
+  if (!r || r.art==="aus") return "kein fester Rhythmus";
+  if (r.art==="m") return "jeden " + (r.nr===-1 ? "letzten" : r.nr+".") + " " + WT[r.tag] + " im Monat um " + r.zeit + " Uhr";
+  const n = +r.art[1];
+  return (n===1 ? "jede Woche" : "alle "+n+" Wochen") + " " + WT[new Date(r.ab+"T12:00").getDay()] + " um " + r.zeit + " Uhr, ab " + fmtD(r.ab);
+}
+function termin(){
+  const p = ladePlan();
+  if (p && tageBis(p.datum||heute()) >= 0) return {datum:p.datum||heute(), zeit:p.zeit, who:p.who, eigen:true};
+  let t = load("termin", null);
+  if (t && tageBis(t.datum) < 0){ store("termin", null); t = null; }
+  if (t) return t;
+  const n = naechsterRhythmus();
+  if (n) return {datum:n.datum, zeit:rhy().zeit, who:planerFuer(n.idx), rhythmus:true};
+  return null;
+}
+const gesperrt = () => { const t=termin(); return !!t && tageBis(t.datum) > 0; };
+function ics(datum, zeit, min, titel, text, rrule){
+  const st = new Date(datum+"T"+zeit+":00"), en = new Date(st.getTime()+min*60000);
+  const f = d => d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"T"+pad(d.getHours())+pad(d.getMinutes())+"00";
+  const body = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Spielabend//DE","BEGIN:VEVENT","UID:"+Date.now()+"@spielabend",
+    "DTSTAMP:"+f(new Date()),"DTSTART:"+f(st),"DTEND:"+f(en),"SUMMARY:"+titel,"DESCRIPTION:"+text].concat(rrule?["RRULE:"+rrule]:[]).concat([
+    "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:"+titel,"END:VALARM","END:VEVENT","END:VCALENDAR"]).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([body],{type:"text/calendar"})); a.download = "termin.ics";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function updateLock(){
+  const t = termin(), lock = gesperrt();
+  $("roll").disabled = lock; $("roll").style.opacity = lock ? .5 : 1;
+  $("roll").textContent = lock ? "🔒 Nächster Spielabend: "+fmtD(t.datum)+" – noch "+tageTxt(tageBis(t.datum)) : "🎲 Abend auswürfeln";
+  $("befehlBtn").disabled = lock; $("befehlBtn").style.opacity = lock ? .5 : 1;
+  const fest = !!t && !t.rhythmus;
+  $("planBtn").classList.toggle("hidden", fest);
+  $("planBtn").textContent = t && t.rhythmus ? "🤫 Geheimen Plan schmieden – "+wer(t.who)+" ist dran" : "🤫 Geheimen Plan schmieden";
+  $("codeBox").classList.toggle("hidden", fest);
+  planStatus();
+}
+function planStatus(){
+  const p = ladePlan(), t = termin(), box = $("planStatus");
+  if (!t){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  const n = tageBis(t.datum), wann = fmtD(t.datum)+", "+esc(t.zeit)+" Uhr";
+  const cd = n>0 ? "Noch "+tageTxt(n)+". Bis dahin: Foto-Aufgaben zum Heißmachen." : "Heute ist es so weit! 🔥";
+  const heim = heimOn() ? `<p style="font-size:.8rem;color:var(--muted);margin-top:8px">💊 Am Spieltag nimmt ${esc(nameA())} nichts selbst – darum kümmert sich ${esc(nameB())}.</p>` : "";
+  if (t.rhythmus){
+    box.innerHTML = `<div class="label">📅 Nächster Spielabend</div>
+      <p style="line-height:1.5"><b>${wann}</b>. ${cd} Diesmal plant <b>${esc(wer(t.who))}</b>.</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:6px">Rhythmus: ${esc(rhyText(rhy()))}</p>${heim}
+      <div class="row2"><button class="btn sec" onclick="rhyIcs()">📅 Alle Termine in Kalender</button><button class="btn sec" onclick="$('rhyBox').open=true;$('rhyBox').scrollIntoView({behavior:'smooth'})">⚙︎ Rhythmus ändern</button></div>`;
+  } else if (t.eigen && p){
+    box.innerHTML = `<div class="label">🔒 Geheimer Plan</div>
+      <p style="line-height:1.5">${esc(wer(p.who))} hat für <b>${wann}</b> etwas vorbereitet. ${cd} ${p.tasks.length} Aufgaben warten – welche, wird erst beim Spielen aufgedeckt.</p>${heim}
+      <div class="row2"><button class="btn sec" onclick="planSpielen()" ${n>0?"disabled style='opacity:.45'":""}>▶︎ Plan starten</button><button class="btn sec" onclick="planEinladung()">📲 Einladung + Code</button></div>
+      <div class="row2"><button class="btn sec" onclick="terminIcs()">📅 In Kalender</button><button class="btn sec" onclick="planStart()">✎ Bearbeiten</button></div>
+      <div class="row2"><button class="btn sec" onclick="planLoeschen()" style="grid-column:1/3">🗑 Plan löschen</button></div>`;
+  } else {
+    box.innerHTML = `<div class="label">📅 Spielabend steht</div>
+      <p style="line-height:1.5">${esc(wer(t.who))} hat den Abend geplant: <b>${wann}</b>. ${cd} Was passiert, steht auf ${esc(wer(t.who))}s Handy.</p>${heim}
+      <div class="row2"><button class="btn sec" onclick="terminIcs()">📅 In Kalender</button><button class="btn sec" onclick="terminAbsagen()">✕ Termin entfernen</button></div>`;
+  }
+}
+function rhyIcs(){
+  const r = rhy(), n = naechsterRhythmus(); if (!r || !n) return;
+  const rr = r.art==="m" ? "FREQ=MONTHLY;BYDAY="+r.nr+["SU","MO","TU","WE","TH","FR","SA"][r.tag] : "FREQ=WEEKLY;INTERVAL="+r.art[1];
+  ics(n.datum, r.zeit, 180, "Date-Abend ❤️", "Date", rr);
+}
+function rhyUI(){
+  const r = rhy() || {art:"aus", zeit:"21:00", wer:"BA", nr:2, tag:6};
+  $("rhyArt").value = r.art; $("rhyZeit").value = r.zeit; $("rhyWer").value = r.wer;
+  $("rhyNr").value = String(r.nr); $("rhyTag").value = String(r.tag); $("rhyAb").value = r.ab || "";
+  rhyFelder();
+}
+function rhyFelder(){
+  const a = $("rhyArt").value;
+  $("rhyW").style.display = a[0]==="w" ? "" : "none";
+  $("rhyM").style.display = a==="m" ? "grid" : "none";
+  if (a[0]==="w" && !$("rhyAb").value){ const d=new Date(); d.setDate(d.getDate()+((6-d.getDay()+7)%7||7)); $("rhyAb").value = iso(d); }
+}
+$("rhyArt").onchange = rhyFelder;
+$("rhySave").onclick = () => {
+  const a = $("rhyArt").value;
+  if (a[0]==="w" && !$("rhyAb").value){ toast("Bitte den ersten Termin wählen"); return; }
+  const alt = rhy();
+  const r = {art:a, ab:$("rhyAb").value, nr:+$("rhyNr").value, tag:+$("rhyTag").value, zeit:$("rhyZeit").value||"21:00", wer:$("rhyWer").value,
+             start: alt && alt.art===a && alt.start ? alt.start : heute().slice(0,7)};
+  store("rhythmus", r);
+  if (a==="m" && !(alt && alt.art===a && alt.start)){ const n0 = naechsterRhythmus(); if (n0){ r.start = n0.datum.slice(0,7); store("rhythmus", r); } }
+  updateLock(); $("rhyBox").open = false;
+  const n = naechsterRhythmus(); toast(n ? "Nächster Spielabend: "+fmtD(n.datum) : "Kein fester Rhythmus");
+};
+$("rhySend").onclick = () => {
+  const r = rhy(); if (!r || r.art==="aus"){ toast("Erst einen Rhythmus speichern"); return; }
+  teilen("📅 Unser Spielabend-Rhythmus: " + rhyText(r) + ".\n\n🔑 Code: RHYTHMUS|"+[r.art,r.ab||"-",r.nr,r.tag,r.zeit,r.wer,r.start].join("|"));
+};
+function terminIcs(){ const t=termin(); if(t) ics(t.datum, t.zeit, 180, "Date-Abend ❤️", "Date"); }
+function terminAbsagen(){ if(confirm("Termin von diesem Handy entfernen?")){ store("termin", null); updateLock(); } }
+$("codeOk").onclick=()=>{
+  const r = /RHYTHMUS\|(\w+)\|([\d-]+)\|(-?\d)\|(\d)\|(\d{2}:\d{2})\|([AB]{1,2})\|(\d{4}-\d{2})/.exec($("codeIn").value);
+  if (r){ store("rhythmus", {art:r[1], ab:r[2]==="-"?"":r[2], nr:+r[3], tag:+r[4], zeit:r[5], wer:r[6], start:r[7]}); $("codeIn").value=""; rhyUI(); updateLock(); toast("📅 Rhythmus übernommen"); return; }
+  const m = /SPIELABEND\|(\d{4}-\d{2}-\d{2})\|(\d{2}:\d{2})\|([AB])/.exec($("codeIn").value);
+  if (!m){ toast("Kein Termin-Code gefunden"); return; }
+  store("termin", {datum:m[1], zeit:m[2], who:m[3]}); $("codeIn").value=""; updateLock(); toast("📅 Termin übernommen");
+};
+function planEinladung(){
+  const p = ladePlan(); if(!p) return;
+  teilen(einlText(p.who, Math.floor(Math.random()*3), p.zeit, p, p.datum) + "\n\n🔑 Termin-Code: SPIELABEND|"+(p.datum||heute())+"|"+p.zeit+"|"+p.who);
+}
+function planLoeschen(){ const p=ladePlan(); if(!p||!pinOk(p)) return; if(!confirm("Plan wirklich löschen?")) return; store("plan", null); try{localStorage.removeItem("spielabend_plan")}catch(e){} updateLock(); }
+function planSpielen(){
+  const p = ladePlan(); if(!p) return;
+  if (gesperrt()){ toast("Noch nicht – erst am "+fmtD(p.datum)); return; }
+  aktStufe = p.stufe; taskNr = 1; vA = 2; vB = 2;
+  s = {rolle:p.rolle, ort:p.ort, toy:p.toy, dress:p.dress, med:p.med, plan:{who:p.who, tasks:p.tasks, idx:0}};
+  rollTask();
+  $("zeit").value = p.zeit; $("von").value = p.who; einlIdx = 0;
+  render(); makeEinladung();
+  $("result").classList.remove("hidden"); $("result").scrollIntoView({behavior:"smooth"});
+}
+$("planBtn").onclick = planStart;
+let befehl = null, foto = null;
+function befehlZeigen(){
+  befehl = pick(BEFEHLE.filter(b=>b!==befehl));
+  const box = $("befehlBox"); box.classList.remove("hidden");
+  box.innerHTML = `<div class="label">👑 ${esc(nameB())} befiehlt</div>
+    <div class="v" style="font-size:1.1rem;line-height:1.5">„${esc(befehl)}“</div>
+    <div class="row2"><button class="btn sec" onclick="befehlZeigen()">↻ Anderer</button><button class="btn sec" onclick="befehlSenden()">📲 An ${esc(nameA())}</button></div>`;
+}
+function befehlSenden(){ teilen("👑 Befehl von "+nameB()+":\n„"+befehl+"“"); }
+$("befehlBtn").onclick = () => { if(!gesperrt()) befehlZeigen(); };
+function fotoZeigen(){
+  foto = pick(FOTOS.filter(f=>f!==foto));
+  const box = $("befehlBox"); box.classList.remove("hidden");
+  box.innerHTML = `<div class="label">📸 Foto-Aufgabe</div>
+    <div class="v" style="font-size:1.1rem;line-height:1.5">${esc(fill(foto.t))}</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:8px">Tipp: Als Einmal-Ansicht schicken, ohne Gesicht, und nicht in der Cloud sichern.</p>
+    <div class="row2"><button class="btn sec" onclick="fotoZeigen()">↻ Andere</button><button class="btn sec" onclick="fotoSenden()">📲 Aufgabe teilen</button></div>`;
+}
+function fotoSenden(){ teilen("📸 Foto-Aufgabe:\n"+fill(foto.t)); }
+$("fotoBtn").onclick = fotoZeigen;
+
+/* ---------- Buttons ---------- */
+$("roll").onclick=rollAll;
+document.querySelectorAll("[data-re]").forEach(b=>b.onclick=()=>{
+  ({rolle:rollRolle,ort:rollOrt,toy:rollToy,dress:rollDress})[b.dataset.re]();
+  render(); makeEinladung();
+});
+$("next").onclick=()=>{taskNr++;rollTask();render();};
+$("hotter").onclick=()=>{ if(aktStufe<4){aktStufe++;taskNr++;rollToy();rollTask();render();toast(STUFEN[aktStufe-1].e+" Jetzt: "+STUFEN[aktStufe-1].n);} };
+$("vetoA").onclick=()=>{if(vA>0){vA--;vetoTask();render();toast("Veto – neue Aufgabe");}};
+$("vetoB").onclick=()=>{if(vB>0){vB--;vetoTask();render();toast("Veto – neue Aufgabe");}};
+
+["nameA","nameB"].forEach(id=>$(id).oninput=()=>{store(id,$(id).value);updNames();if(s.task){render();makeEinladung();}});
+["sitz","tausch","ns"].forEach(id=>$(id).onchange=()=>store(id,$(id).checked));
+
+/* ---------- Start ---------- */
+stufe = load("stufe",1);
+$("nameA").value = load("nameA","");
+$("nameB").value = load("nameB","");
+$("sitz").checked = load("sitz",true);
+$("tausch").checked = load("tausch",true);
+$("ns").checked = load("ns",false);
+$("med").value = load("med","none"); $("medVor").value = load("medVor","");
+$("medOpt").classList.toggle("hidden", medTyp()==="none");
+$("medHeim").checked = load("medHeim",false); $("medHeimRow").classList.toggle("hidden", medTyp()!=="tab");
+if (!$("nameA").value || !$("nameB").value) $("namenBox").open = true;
+rhyUI(); updNames(); renderLevels(); updateLock();
+if ("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
