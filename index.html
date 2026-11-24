@@ -26,7 +26,10 @@ header h1{font-family:Georgia,serif;font-style:italic;font-size:2rem;letter-spac
 header p{color:var(--muted);font-size:.9rem;margin-top:4px}
 .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
 .label{font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
-.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.lv5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:.92rem;line-height:1.4}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex-shrink:0}
 .lvl{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 2px;
   font-size:.72rem;text-align:center;cursor:pointer}
 .lvl b{display:block;font-size:1.2rem;margin-bottom:2px}
@@ -93,6 +96,7 @@ details summary::-webkit-details-marker{display:none}
     <div class="label">Wie wild heute?</div>
     <div class="levels" id="levels"></div>
     <div class="lvldesc" id="lvldesc"></div>
+    <button class="btn sec hidden" id="indivBtn" style="margin-top:10px">✎ Aufgaben auswählen</button>
   </div>
 
   <div class="box">
@@ -219,12 +223,13 @@ details summary::-webkit-details-marker{display:none}
       <span class="dot" style="background:#3ccf6e"></span><b>Grün</b> – weiter so, gern mehr.<br>
       <span class="dot" style="background:#f2c46d"></span><b>Gelb</b> – langsamer, kurz durchatmen.<br>
       <span class="dot" style="background:#e0245e"></span><b>Rot</b> – sofort Stopp, ohne Diskussion.<br><br>
-      Mit Knebel oder Kopfhörer gilt stattdessen: dreimal klopfen = Stopp. Handschellen-Schlüssel immer griffbereit, niemanden gefesselt allein lassen. In der Dusche rutschfeste Matte und Hocker, aber niemanden in der Dusche fesseln. Natursekt nur in der Dusche oder im Bett mit wasserdichter Unterlage und Handtüchern, nicht in Augen oder Mund, nicht bei Blasenentzündung oder anderen Infekten, danach gründlich abduschen. Wachs nur von echten Massagekerzen.<br><br>
+      Mit Knebel oder Kopfhörer gilt stattdessen: dreimal klopfen = Stopp. Knebel nie länger als 30 Minuten am Stück, und wer geknebelt oder gefesselt ist, wird keine Sekunde allein gelassen.<br><br><b>Elektro:</b> Elektroden nur unterhalb der Taille, nie über Brust, Herz, Hals oder Kopf, und Strom nie quer durch den Oberkörper. Nicht bei Herzschrittmacher oder Herzproblemen, nicht in der Dusche oder auf nasser Haut und nicht zusammen mit Natursekt. Immer mit der niedrigsten Stufe anfangen.<br><br><b>Schmutzige Worte:</b> Welche Wörter erlaubt sind und welche nicht, sprecht ihr vorher nüchtern ab. Handschellen-Schlüssel immer griffbereit, niemanden gefesselt allein lassen. In der Dusche rutschfeste Matte und Hocker, aber niemanden in der Dusche fesseln. Natursekt nur in der Dusche oder im Bett mit wasserdichter Unterlage und Handtüchern, nicht in Augen oder Mund, nicht bei Blasenentzündung oder anderen Infekten, danach gründlich abduschen. Wachs nur von echten Massagekerzen.<br><br>
       <b>Potenzmittel:</b> nur die verordnete Dosis, nie zwei Mittel am selben Abend kombinieren und nichts nachlegen. Bei Tabletten keine Poppers oder andere Nitrate. Die SKAT-Spritze gibt <span class="nB"></span> nur, wenn sie vom Arzt eingewiesen wurde. Im heimlichen Modus gilt: An Spieltagen nimmt <span class="nA"></span> nichts selbst, und es wird nie mehr als ein Mittel kombiniert. Hält eine Erektion länger als 4 Stunden: sofort in die Notaufnahme.<br><br><b>Fotos:</b> nur zwischen euch beiden, am besten als Einmal-Ansicht, ohne Gesicht und nicht automatisch in Cloud oder Galerie sichern.
     </div>
   </div>
 </div>
 <div class="overlay hidden" id="ov"><div class="wrap" id="ovIn"></div></div>
+<p style="text-align:center;font-size:.7rem;color:var(--muted);margin-top:4px">Version 7</p>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -234,7 +239,8 @@ const STUFEN = [
   {n:"Prickelnd", e:"✨", d:"Verführung, Augenbinde, erste Spielzeuge."},
   {n:"Heiß", e:"🔥", d:"Rollenspiel, Fesseln, Machtspiele."},
   {n:"Versaut", e:"😈", d:"Ohne Hemmungen: Befehle, Kontrolle, Grenzen ausloten."},
-  {n:"Überraschung", e:"🎁", d:"Der Zufall entscheidet die Stufe – und kann jederzeit steigern."}
+  {n:"Überraschung", e:"🎁", d:"Der Zufall entscheidet die Stufe – und kann jederzeit steigern."},
+  {n:"Individuell", e:"🎛️", d:"Nur die Aufgaben, die ihr selbst ausgewählt habt – inklusive Hardcore und Elektro."}
 ];
 
 // {A} = er, {B} = sie. l = Stufe. sA/sB = Rollen bei Rollentausch.
@@ -279,6 +285,8 @@ const SPIELZEUG = [
   {l:4, n:"Paddel oder flache Hand", h:"Erst sanft, Ampel beachten."},
   {l:4, n:"Augenbinde + Kopfhörer", h:"Totaler Sinnesentzug – dreimal klopfen = Stopp."},
   {l:3, n:"VR-Brille (Quest 3)", h:"Akku laden, Film vorher aussuchen, Ton über Kopfhörer."},
+  {l:5, n:"Elektro-Stimulation (E-Stim)", h:"Elektroden nur unterhalb der Taille, nie nass benutzen."},
+  {l:5, n:"Knebel", h:"Klopfzeichen vorher üben, nie allein lassen."},
   {l:0, n:"Freie Wahl", h:"Wer verliert beim Schnick-Schnack-Schnuck, wählt aus eurer Kiste."}
 ];
 
@@ -339,6 +347,27 @@ const AUFGABEN = [
   {l:2, m:120, t:"Foto-Teaser: Bis zum Abend schickt {B} {A} alle zwei Stunden ein Foto – jedes zeigt ein bisschen mehr als das letzte."},
   {l:2, m:30, t:"Foto-Duell: Ihr schickt euch abwechselnd ein Foto, das den anderen heiß macht. Wer zuerst schwach wird und anruft, verliert und erfüllt dem anderen einen Wunsch."},
   {l:3, m:15, t:"{A} schickt {B} ein Foto, wie er auf sie wartet. Je nachdem, wie es ihr gefällt, kommt sie sofort – oder lässt ihn noch zappeln."},
+  {l:5, hc:true, m:20, t:"Benutzt: {A} sitzt im Sessel. {B} ist die nächsten 20 Minuten nur für sein Vergnügen da und muss für alles um Erlaubnis bitten – sogar fürs Sprechen."},
+  {l:5, hc:true, m:20, t:"Benutzt, andersrum: {A} ist mit Handschellen an der Schaukel fixiert. {B} nimmt sich, was sie will, so oft sie will. Er darf erst, wenn sie fertig ist – wenn überhaupt."},
+  {l:5, hc:true, m:10, t:"Schmutzige Worte: {B} beschimpft und erniedrigt {A} mit genau den Worten, die ihr vorher abgesprochen habt. Er bedankt sich für jeden Satz."},
+  {l:5, hc:true, m:10, t:"Schmutzige Worte, andersrum: {A} redet {B} mit den abgesprochenen Worten klein, während sie vor ihm kniet. Sie antwortet nur mit „Ja“."},
+  {l:5, hc:true, m:10, t:"Keuschheit: {A} darf bis zum nächsten Spielabend nicht kommen. {B} neckt ihn jeden Tag mindestens einmal – und entscheidet am Spielabend, ob er darf."},
+  {l:5, hc:true, m:15, t:"Ruiniert: {B} bringt {A} ganz an die Grenze und lässt in genau dem Moment los, in dem er kommt. Danach darf er sich bedanken."},
+  {l:5, hc:true, m:20, t:"Kein Erbarmen: {B} ist in der Schaukel fixiert, {A} hört mit dem Vibrator nicht auf – nicht nach dem ersten, nicht nach dem zweiten, nicht nach dem dritten Mal. Nur Rot oder das Klopfzeichen beenden es."},
+  {l:5, hc:true, m:20, t:"Verschnürt: {B} an Händen und Füßen fixiert, Augenbinde und Knebel, Klopfzeichen vorher üben. {A} lässt sie erst warten und spielt dann mit allem aus der Kiste. Er bleibt die ganze Zeit im Raum."},
+  {l:5, hc:true, m:15, t:"An der Leine: {B} trägt Halsband und Leine, bewegt sich nur auf allen vieren und nur auf Kommando zu {A} auf seinem Thron. Sprechen verboten."},
+  {l:5, hc:true, m:5,  t:"Dreckig: {B} hält {A}s Kinn fest, spuckt ihm in den Mund und befiehlt ihm, Danke zu sagen. Dann entscheidet sie, was als Nächstes passiert."},
+  {l:5, hc:true, m:10, t:"Harte Strafbank: Zwanzig Schläge mit dem Paddel für {B}. Sie zählt laut mit, wer sich verzählt, fängt von vorn an. Nach jedem fünften Schlag die Ampel abfragen."},
+  {l:5, hc:true, m:30, t:"Stumm und blind: {A} trägt für 30 Minuten Knebel und Augenbinde. Er bekommt nur noch Befehle durch Berührungen – und gehorcht."},
+  {l:5, hc:true, m:15, t:"Vorführen: {A} muss sich vor {B} selbst anfassen, während sie ihm sagt, wie erbärmlich er dabei aussieht. Kommen darf er nur auf ihr Kommando."},
+  {l:5, hc:true, ns:true, m:10, t:"Nass gemacht: {B} lässt es in der Dusche auf {A} laufen und befiehlt ihm, danach so sitzen zu bleiben, bis sie ihn abduscht – wann, entscheidet sie."},
+  {l:5, hc:true, ns:true, m:10, t:"Vorgeführt in der Dusche: Nach dem Natursekt bleibt {A} nass auf dem Hocker und muss sich vor ihr selbst anfassen, bis sie das Wasser aufdreht."},
+  {l:5, hc:true, ns:true, bett:true, m:20, t:"Markiert: {B} markiert {A} im vorbereiteten Bett als ihr Eigentum. Danach benutzt sie ihn, ohne dass vorher geduscht wird."},
+  {l:5, el:true, m:10, t:"Strom an: {A} trägt die Elektroden, {B} hat die Steuerung. Sie dreht langsam hoch und fragt bei jeder Stufe: „Mehr?“"},
+  {l:5, el:true, m:15, t:"Unter Strom gefesselt: {A} sitzt gefesselt im Sessel mit angelegtem E-Stim. {B} wechselt die Programme – kommen darf er erst, wenn sie es erlaubt."},
+  {l:5, el:true, m:10, t:"Elektro für sie: {B} trägt das E-Stim-Spielzeug, {A} hat die Steuerung und bestimmt Rhythmus und Stärke."},
+  {l:5, el:true, m:10, t:"Doppelt geladen: Vibrator für {B}, E-Stim für {A}. Wer zuerst kommt, wird bestraft – womit, bestimmt der andere."},
+  {l:5, el:true, m:15, t:"Impulse: {B} ist mit Augenbinde fixiert, {A} schaltet die Elektro-Impulse zufällig an und aus. Sie weiß nie, wann der nächste kommt."},
   {l:4, m:8,  t:"{A} nimmt {B} im Stehen an der Wand – ohne Vorwarnung, ohne Vorspiel.", st:true}
 ];
 
@@ -420,7 +449,7 @@ const pick = a => a[Math.floor(Math.random()*a.length)];
 const nameA = () => $("nameA").value.trim() || "Er";
 const nameB = () => $("nameB").value.trim() || "Sie";
 
-const SYNC_KEYS = ["nameA","nameB","sitz","tausch","ns","med","medVor","medHeim","medGabe","rhythmus","termin","planEnc"];
+const SYNC_KEYS = ["indiv","eigene","nameA","nameB","sitz","tausch","ns","med","medVor","medHeim","medGabe","rhythmus","termin","planEnc"];
 function store(k,v){
   try{localStorage.setItem("spielabend_"+k,JSON.stringify(v))}catch(e){}
   if (SYNC_KEYS.includes(k)){ const ts = load("ts",{}); ts[k] = Date.now(); try{localStorage.setItem("spielabend_ts",JSON.stringify(ts))}catch(e){} abgleichBald(); }
@@ -436,6 +465,8 @@ function updNames(){document.querySelectorAll(".nA").forEach(e=>e.textContent=na
 function renderLevels(){
   $("levels").innerHTML = STUFEN.map((x,i)=>`<div class="lvl ${stufe===i+1?'on':''}" data-l="${i+1}"><b>${x.e}</b>${x.n}</div>`).join("");
   $("lvldesc").textContent = STUFEN[stufe-1].d;
+  $("indivBtn").classList.toggle("hidden", stufe!==6);
+  $("indivBtn").textContent = "✎ Aufgaben auswählen (" + indivPool().length + " ausgewählt)";
   document.querySelectorAll(".lvl").forEach(el=>el.onclick=()=>{stufe=+el.dataset.l;store("stufe",stufe);renderLevels();});
 }
 
@@ -452,10 +483,20 @@ function genRolle(l){
   return {t:r.t+(t?" (getauscht)":""), h:r.h, A: t? r.sA : r.A, B: t? r.sB : r.B};
 }
 const genOrt = () => pick(ORTE.filter(o=>!(sitz()&&o.st)));
-const genToy = l => pick(SPIELZEUG.filter(t=>t.l===0||(t.l<=l&&t.l>=l-1)));
+const genToy = l => l>=5 ? pick(SPIELZEUG) : pick(SPIELZEUG.filter(t=>t.l===0||(t.l<=l&&t.l>=l-1)));
 const genDress = () => pick(DRESS);
 const taskOk = a => !(sitz()&&a.st) && !(a.ns&&!$("ns").checked);
+function indivPool(){
+  const sel = new Set(load("indiv", []));
+  return AUFGABEN.filter(a=>sel.has(a.t)).concat(load("eigene", []).map(e=>({t:e.t, m:e.m||10, own:true})));
+}
 function genTask(l, ex){
+  if (l===6){
+    let q = indivPool().filter(a=>!(sitz()&&a.st));
+    if (!q.length) return genTask(4, ex);
+    if (ex && q.length>1) q = q.filter(a=>a.t!==ex.t);
+    return pick(q);
+  }
   let p = poolStufe(AUFGABEN, l).filter(taskOk);
   if (ex && p.length>1) p = p.filter(a=>a.t!==ex.t);
   return pick(p);
@@ -473,6 +514,7 @@ function vetoTask(){ s.task = genTask(aktStufe, s.task); setTimer(s.task.m); }
 
 function rollAll(){
   if (gesperrt()){ toast("Gesperrt bis zum Spielabend"); return; }
+  if (stufe===6 && !indivPool().length){ toast("Erst eure Aufgaben auswählen"); indivEdit(); return; }
   aktStufe = stufe===5 ? 1+Math.floor(Math.random()*4) : stufe;
   taskNr = 1; vA = 2; vB = 2; s = {};
   rollRolle(); rollOrt(); rollToy(); rollDress(); rollTask();
@@ -483,7 +525,14 @@ function rollAll(){
   if (stufe===5) toast("Überraschung: Stufe „"+STUFEN[aktStufe-1].n+"“");
 }
 
+function sicher(){
+  // Strom und Wasser niemals zusammen
+  const elektro = (s.task && s.task.el) || (s.toy && s.toy.n.startsWith("Elektro"));
+  if (elektro && s.ort && s.ort.n==="Große Dusche") s.ort = pick(ORTE.filter(o=>o.n!=="Große Dusche" && !(sitz()&&o.st)));
+  if (s.task && s.task.ns && s.toy && s.toy.n.startsWith("Elektro")) s.toy = pick(SPIELZEUG.filter(t=>!t.n.startsWith("Elektro") && t.l>=3));
+}
 function render(){
+  sicher();
   updNames();
   const r = s.rolle;
   $("rRolle").innerHTML = `<b>${r.t}</b><br>${nameA()}: ${r.A}<br>${nameB()}: ${r.B}`;
@@ -495,6 +544,7 @@ function render(){
   $("tNr").textContent = "Aufgabe "+taskNr+" · "+(s.task.plan ? "🤫 aus "+wer(s.plan.who)+"s Plan" : STUFEN[aktStufe-1].e+" "+STUFEN[aktStufe-1].n);
   $("tText").textContent = fill(s.task.t);
   $("tBadges").innerHTML = `<span class="badge">⏱ ${s.task.m} Min.</span>` + (sitz()?`<span class="badge">🪑 ohne Stehen</span>`:"")+(s.task.ns?(s.task.bett?`<span class="badge">🛏 wasserdichte Unterlage + Handtücher</span>`:`<span class="badge">🚿 nur in der Dusche</span>`):"")
+    +(s.task.el?`<span class="badge">⚡ unterhalb der Taille, nie nass</span>`:"")+(s.task.hc?`<span class="badge">🖤 Hardcore</span>`:"")
     +(s.plan&&s.plan.idx<s.plan.tasks.length?`<span class="badge">🤫 noch ${s.plan.tasks.length-s.plan.idx} geplant</span>`:"");
   $("vA").textContent=vA; $("vB").textContent=vB;
   $("vetoA").disabled = vA<=0; $("vetoB").disabled = vB<=0;
@@ -599,7 +649,7 @@ function sync(){
 }
 function planEdit(){
   const d = draft;
-  const lv = [1,2,3,4].map(i=>`<div class="lvl ${d.stufe===i?'on':''}" onclick="planStufe(${i})"><b>${STUFEN[i-1].e}</b>${STUFEN[i-1].n}</div>`).join("");
+  const lv = [1,2,3,4,6].map(i=>`<div class="lvl ${d.stufe===i?'on':''}" onclick="planStufe(${i})"><b>${STUFEN[i-1].e}</b>${STUFEN[i-1].n}</div>`).join("");
   const row = (ico,k,v,h,key)=>`<div class="item"><div class="ico">${ico}</div><div class="t"><div class="k">${k}</div><div class="v">${v}</div>${h?`<div class="h">${esc(h)}</div>`:""}</div><button class="re" onclick="planRe('${key}')">↻</button></div>`;
   const tasks = d.tasks.map((t,i)=>`<div class="item"><div class="ico">${i+1}</div><div class="t"><div class="v">${esc(fill(t.t))}</div><div class="h">⏱ ${t.m} Min.${t.ns?(t.bett?" · 🛏 Bett vorbereiten":" · 🚿 Dusche"):""}${t.own?" · ✍︎ eigene Idee":""}${t.befehl?" · 👑 Befehl":""}</div></div><button class="re" onclick="planTaskRe(${i})">↻</button><button class="re" onclick="planTaskDel(${i})">✕</button></div>`).join("") || `<div class="h" style="color:var(--muted)">Noch keine Aufgaben.</div>`;
   ov(`<header><h1>Dein geheimer Plan</h1><p>Nur für ${esc(wer(d.who))}. Die Aufgaben werden erst beim Spielen einzeln aufgedeckt.</p></header>
@@ -611,7 +661,7 @@ function planEdit(){
       </div>
       <button class="btn sec" style="margin-top:8px" onclick="planIcsPrep()">📅 Private Erinnerung zur Vorbereitung</button>
     </div>
-    <div class="box"><div class="label">Stufe</div><div class="lv4">${lv}</div></div>
+    <div class="box"><div class="label">Stufe</div><div class="lv5">${lv}</div></div>
     <div class="box"><div class="label">Szenario</div>
       ${row("🎭","Rollen",`<b>${esc(d.rolle.t)}</b><br>${esc(nameA())}: ${esc(d.rolle.A)}<br>${esc(nameB())}: ${esc(d.rolle.B)}`,d.rolle.h,"rolle")}
       ${row("📍","Ort",esc(d.ort.n),d.ort.h,"ort")}
@@ -834,6 +884,42 @@ $("vetoB").onclick=()=>{if(vB>0){vB--;vetoTask();render();toast("Veto – neue A
 ["nameA","nameB"].forEach(id=>$(id).oninput=()=>{store(id,$(id).value);updNames();if(s.task){render();makeEinladung();}});
 ["sitz","tausch","ns"].forEach(id=>$(id).onchange=()=>store(id,$(id).checked));
 
+/* ---------- Individuell: Auswahl ---------- */
+const GRUPPEN = [
+  ["💗 Zärtlich", a=>a.l===1], ["✨ Prickelnd", a=>a.l===2], ["🔥 Heiß", a=>a.l===3], ["😈 Versaut", a=>a.l===4],
+  ["🖤 Hardcore", a=>a.hc], ["⚡ Elektro", a=>a.el]
+];
+let indivSel = null, eigeneTmp = null;
+function indivEdit(){
+  if (!indivSel){ indivSel = new Set(load("indiv", [])); eigeneTmp = load("eigene", []).slice(); }
+  const grp = GRUPPEN.map(([name, f], gi) => {
+    const list = AUFGABEN.map((a,i)=>[a,i]).filter(([a])=>f(a));
+    const alle = list.every(([a])=>indivSel.has(a.t));
+    return `<div class="box"><div style="display:flex;justify-content:space-between;align-items:center"><div class="label" style="margin:0">${name}</div>
+      <button class="re" style="width:auto;padding:0 10px;font-size:.8rem" onclick="indivGruppe(${gi},${alle?0:1})">${alle?"keine":"alle"}</button></div>
+      ${list.map(([a,i])=>`<label class="chk"><input type="checkbox" ${indivSel.has(a.t)?"checked":""} onchange="indivToggle(${i},this.checked)"><span>${esc(fill(a.t))}${a.ns?" <small style='color:var(--muted)'>💦</small>":""}${a.st?" <small style='color:var(--muted)'>(im Stehen)</small>":""}</span></label>`).join("")}</div>`;
+  }).join("");
+  const eig = eigeneTmp.map((e,i)=>`<div class="item"><div class="t"><div class="v">${esc(fill(e.t))}</div><div class="h">⏱ ${e.m} Min.</div></div><button class="re" onclick="eigeneDel(${i})">✕</button></div>`).join("");
+  ov(`<header><h1>Eure Auswahl</h1><p>Hakt an, was bei „Individuell“ ins Spiel kommt.</p></header>
+    ${grp}
+    <div class="box"><div class="label">✍︎ Eigene Ideen</div>${eig || `<div class="h" style="color:var(--muted)">Noch keine.</div>`}
+      <textarea id="eigNeu" style="min-height:70px;margin-top:10px" placeholder="Eure eigene Aufgabe …"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><input type="text" id="eigMin" inputmode="numeric" placeholder="Minuten (z. B. 10)"><button class="btn sec" onclick="eigeneAdd()">+ Hinzufügen</button></div>
+    </div>
+    <button class="btn" onclick="indivSpeichern()">💾 Auswahl speichern</button>
+    <button class="btn sec" style="margin-top:8px" onclick="indivSel=null;closeOv()">Abbrechen</button>`);
+}
+function indivToggle(i, on){ on ? indivSel.add(AUFGABEN[i].t) : indivSel.delete(AUFGABEN[i].t); }
+function indivGruppe(gi, on){ AUFGABEN.filter(GRUPPEN[gi][1]).forEach(a=> on ? indivSel.add(a.t) : indivSel.delete(a.t)); const y=$("ov").scrollTop; indivEdit(); $("ov").scrollTop=y; }
+function eigeneAdd(){ const t=$("eigNeu").value.trim(); if(!t){toast("Erst etwas eintippen");return;} eigeneTmp.push({t, m:parseInt($("eigMin").value)||10}); const y=$("ov").scrollTop; indivEdit(); $("ov").scrollTop=y; }
+function eigeneDel(i){ eigeneTmp.splice(i,1); const y=$("ov").scrollTop; indivEdit(); $("ov").scrollTop=y; }
+function indivSpeichern(){
+  // nur noch existierende Texte behalten
+  store("indiv", AUFGABEN.filter(a=>indivSel.has(a.t)).map(a=>a.t)); store("eigene", eigeneTmp);
+  indivSel = null; closeOv(); renderLevels(); toast("💾 " + indivPool().length + " Aufgaben ausgewählt");
+}
+$("indivBtn").onclick = indivEdit;
+
 /* ---------- Abgleich (Google Apps Script) ---------- */
 let abgleichTimer = null, abgleichLaeuft = false;
 const SYNC_URL_STANDARD = "https://script.google.com/macros/s/AKfycbxIjwO0-kR1FyPO7Eeqlh8m7bBs9fUl_dp-yCiEk5AVAzqUs0v45gvvzroEO39rjO5Ajw/exec";
@@ -915,7 +1001,14 @@ ladeAlles();
 $("syncUrl").value = syncCfg().url; $("syncCode").value = load("syncCode","");
 if (!$("nameA").value || !$("nameB").value) $("namenBox").open = true;
 if (syncCfg().code) abgleich(); else { syncInfo("Nur noch den Zugangscode eintragen, dann „Jetzt abgleichen“."); $("syncBox").open = true; }
-if ("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+if ("serviceWorker" in navigator && location.protocol==="https:"){
+  const hatteSW = !!navigator.serviceWorker.controller; let neuGeladen = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hatteSW && !neuGeladen){ neuGeladen = true; location.reload(); } });
+  navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(r => {
+    r.update();
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) r.update(); });
+  }).catch(()=>{});
+}
 </script>
 </body>
 </html>
