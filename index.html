@@ -137,6 +137,15 @@ details summary::-webkit-details-marker{display:none}
         <div class="row2" style="margin-top:0"><button class="btn sec" id="rhySave">💾 Speichern</button><button class="btn sec" id="rhySend">📲 An Partner</button></div>
       </div>
     </details>
+    <details style="margin-top:8px" id="syncBox">
+      <summary>🔄 Abgleich zwischen euren Handys <span id="syncDot"></span></summary>
+      <div style="display:grid;gap:10px;margin-top:10px">
+        <div><label style="font-size:.78rem;color:var(--muted)">Web-App-URL aus Google Apps Script (endet auf /exec)</label><input type="text" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+        <div><label style="font-size:.78rem;color:var(--muted)">Zugangscode</label><input type="text" id="syncCode" placeholder="wie im Skript eingetragen"></div>
+        <div class="row2" style="margin-top:0"><button class="btn sec" id="syncNow">🔄 Jetzt abgleichen</button><button class="btn sec" id="syncLink">📲 Link für Partner</button></div>
+        <p id="syncInfo" style="font-size:.78rem;color:var(--muted)">Noch nicht verbunden.</p>
+      </div>
+    </details>
     <details style="margin-top:8px" id="namenBox">
       <summary>⚙︎ Eure Namen</summary>
       <div class="names" style="margin-top:10px">
@@ -411,7 +420,11 @@ const pick = a => a[Math.floor(Math.random()*a.length)];
 const nameA = () => $("nameA").value.trim() || "Er";
 const nameB = () => $("nameB").value.trim() || "Sie";
 
-function store(k,v){try{localStorage.setItem("spielabend_"+k,JSON.stringify(v))}catch(e){}}
+const SYNC_KEYS = ["nameA","nameB","sitz","tausch","ns","med","medVor","medHeim","medGabe","rhythmus","termin","planEnc"];
+function store(k,v){
+  try{localStorage.setItem("spielabend_"+k,JSON.stringify(v))}catch(e){}
+  if (SYNC_KEYS.includes(k)){ const ts = load("ts",{}); ts[k] = Date.now(); try{localStorage.setItem("spielabend_ts",JSON.stringify(ts))}catch(e){} abgleichBald(); }
+}
 function load(k,d){try{const v=localStorage.getItem("spielabend_"+k);return v===null?d:JSON.parse(v)}catch(e){return d}}
 
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
@@ -630,7 +643,10 @@ function planSiegeln(){
   sync();
   if (!draft.tasks.length){ toast("Mindestens eine Aufgabe einplanen"); return; }
   if (!draft.datum || tageBis(draft.datum)<0){ toast("Bitte ein Datum ab heute wählen"); return; }
-  store("plan", draft); draft=null; closeOv(); updateLock(); toast("Plan versiegelt 🔒");
+  const p = draft; store("plan", p); draft=null; closeOv();
+  store("termin", {datum:p.datum, zeit:p.zeit, who:p.who, anz:p.tasks.length, plan:true});
+  if (p.pin) verschluesseln(p, p.pin).then(e=>store("planEnc", e)).catch(()=>store("planEnc", null)); else store("planEnc", null);
+  updateLock(); toast("Plan versiegelt 🔒");
 }
 const heute = () => { const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
 const plusTage = n => { const d=new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
@@ -720,7 +736,8 @@ function planStatus(){
       <div class="row2"><button class="btn sec" onclick="planLoeschen()" style="grid-column:1/3">🗑 Plan löschen</button></div>`;
   } else {
     box.innerHTML = `<div class="label">📅 Spielabend steht</div>
-      <p style="line-height:1.5">${esc(wer(t.who))} hat den Abend geplant: <b>${wann}</b>. ${cd} Was passiert, steht auf ${esc(wer(t.who))}s Handy.</p>${heim}
+      <p style="line-height:1.5">${esc(wer(t.who))} hat den Abend geplant: <b>${wann}</b>. ${cd} ${t.anz?t.anz+" Aufgaben warten. ":""}Was passiert, weiß nur ${esc(wer(t.who))}.</p>${heim}
+      ${load("planEnc",null) && n<=0 ? `<button class="btn sec" style="margin-top:8px" onclick="planHierOeffnen()">🔓 Plan auf diesem Handy öffnen (PIN von ${esc(wer(t.who))})</button>` : ""}
       <div class="row2"><button class="btn sec" onclick="terminIcs()">📅 In Kalender</button><button class="btn sec" onclick="terminAbsagen()">✕ Termin entfernen</button></div>`;
   }
 }
@@ -770,7 +787,7 @@ function planEinladung(){
   const p = ladePlan(); if(!p) return;
   teilen(einlText(p.who, Math.floor(Math.random()*3), p.zeit, p, p.datum) + "\n\n🔑 Termin-Code: SPIELABEND|"+(p.datum||heute())+"|"+p.zeit+"|"+p.who);
 }
-function planLoeschen(){ const p=ladePlan(); if(!p||!pinOk(p)) return; if(!confirm("Plan wirklich löschen?")) return; store("plan", null); try{localStorage.removeItem("spielabend_plan")}catch(e){} updateLock(); }
+function planLoeschen(){ const p=ladePlan(); if(!p||!pinOk(p)) return; if(!confirm("Plan wirklich löschen?")) return; store("plan", null); try{localStorage.removeItem("spielabend_plan")}catch(e){} store("termin", null); store("planEnc", null); updateLock(); }
 function planSpielen(){
   const p = ladePlan(); if(!p) return;
   if (gesperrt()){ toast("Noch nicht – erst am "+fmtD(p.datum)); return; }
@@ -817,7 +834,71 @@ $("vetoB").onclick=()=>{if(vB>0){vB--;vetoTask();render();toast("Veto – neue A
 ["nameA","nameB"].forEach(id=>$(id).oninput=()=>{store(id,$(id).value);updNames();if(s.task){render();makeEinladung();}});
 ["sitz","tausch","ns"].forEach(id=>$(id).onchange=()=>store(id,$(id).checked));
 
+/* ---------- Abgleich (Google Apps Script) ---------- */
+let abgleichTimer = null, abgleichLaeuft = false;
+const SYNC_URL_STANDARD = "https://script.google.com/macros/s/AKfycbxIjwO0-kR1FyPO7Eeqlh8m7bBs9fUl_dp-yCiEk5AVAzqUs0v45gvvzroEO39rjO5Ajw/exec";
+const syncCfg = () => ({url: load("syncUrl","") || SYNC_URL_STANDARD, code: load("syncCode","")});
+function abgleichBald(){ clearTimeout(abgleichTimer); abgleichTimer = setTimeout(abgleich, 1500); }
+function syncInfo(t, ok){ $("syncInfo").textContent = t; $("syncDot").textContent = ok===true ? "🟢" : ok===false ? "🔴" : ""; }
+async function abgleich(laut){
+  const c = syncCfg(); if (!c.url || !c.code || abgleichLaeuft) return;
+  abgleichLaeuft = true;
+  try{
+    const ts = load("ts",{}), state = {};
+    SYNC_KEYS.forEach(k => { if (ts[k]) state[k] = {v: load(k,null), t: ts[k]}; });
+    const r = await fetch(c.url, {method:"POST", body: JSON.stringify({code:c.code, action:"sync", state})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error==="code" ? "Falscher Zugangscode" : (j.error||"Fehler"));
+    let neu = false;
+    Object.entries(j.state||{}).forEach(([k,o]) => {
+      if (!SYNC_KEYS.includes(k)) return;
+      if (!ts[k] || o.t > ts[k]){ try{localStorage.setItem("spielabend_"+k, JSON.stringify(o.v))}catch(e){} ts[k] = o.t; neu = true; }
+    });
+    try{localStorage.setItem("spielabend_ts",JSON.stringify(ts))}catch(e){}
+    if (neu) ladeAlles();
+    const d = new Date(); syncInfo("Abgeglichen um "+pad(d.getHours())+":"+pad(d.getMinutes())+" Uhr.", true);
+    if (laut) toast(neu ? "🔄 Neues vom Partner übernommen" : "🔄 Alles aktuell");
+  }catch(e){ syncInfo("Abgleich fehlgeschlagen: "+e.message, false); if (laut) toast("Abgleich fehlgeschlagen"); }
+  abgleichLaeuft = false;
+}
+$("syncNow").onclick = () => { store("syncUrl",$("syncUrl").value.trim()); store("syncCode",$("syncCode").value.trim()); abgleich(true); };
+$("syncLink").onclick = () => {
+  const c = {url:$("syncUrl").value.trim(), code:$("syncCode").value.trim()};
+  if (!c.url || !c.code){ toast("Erst URL und Zugangscode eintragen"); return; }
+  teilen("🔄 Spielabend verbinden – einfach antippen:\n" + location.href.split("#")[0] + "#sync=" + encodeURIComponent(c.url) + "&code=" + encodeURIComponent(c.code));
+};
+(function linkLesen(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("sync") && h.get("code")){ store("syncUrl",h.get("sync")); store("syncCode",h.get("code")); history.replaceState(null,"",location.pathname); setTimeout(()=>toast("🔄 Verbunden"),500); }
+})();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) abgleich(); });
+setInterval(() => { if (!document.hidden) abgleich(); }, 60000);
+
+/* ---------- Plan verschlüsseln (für den Abgleich) ---------- */
+const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u)));
+const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+async function schluessel(pin, salt){
+  const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:200000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function verschluesseln(obj, pin){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const d = await crypto.subtle.encrypt({name:"AES-GCM", iv}, await schluessel(pin, salt), new TextEncoder().encode(JSON.stringify(obj)));
+  return {s:b64(salt), i:b64(iv), d:b64(d)};
+}
+async function entschluesseln(o, pin){
+  const d = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(o.i)}, await schluessel(pin, unb64(o.s)), unb64(o.d));
+  return JSON.parse(new TextDecoder().decode(d));
+}
+async function planHierOeffnen(){
+  const t = load("termin",null), enc = load("planEnc",null); if (!enc) return;
+  const pin = prompt("PIN von "+(t?wer(t.who):"")+":"); if (!pin) return;
+  try{ const p = await entschluesseln(enc, pin); localStorage.setItem("spielabend_plan", JSON.stringify(p)); updateLock(); toast("🔓 Plan geöffnet"); }
+  catch(e){ toast("Falsche PIN"); }
+}
+
 /* ---------- Start ---------- */
+function ladeAlles(){
 stufe = load("stufe",1);
 $("nameA").value = load("nameA","");
 $("nameB").value = load("nameB","");
@@ -827,8 +908,13 @@ $("ns").checked = load("ns",false);
 $("med").value = load("med","none"); $("medVor").value = load("medVor","");
 $("medOpt").classList.toggle("hidden", medTyp()==="none");
 $("medHeim").checked = load("medHeim",false); $("medHeimRow").classList.toggle("hidden", medTyp()!=="tab");
-if (!$("nameA").value || !$("nameB").value) $("namenBox").open = true;
 rhyUI(); updNames(); renderLevels(); updateLock();
+if (s.task){ render(); makeEinladung(); }
+}
+ladeAlles();
+$("syncUrl").value = syncCfg().url; $("syncCode").value = load("syncCode","");
+if (!$("nameA").value || !$("nameB").value) $("namenBox").open = true;
+if (syncCfg().code) abgleich(); else { syncInfo("Nur noch den Zugangscode eintragen, dann „Jetzt abgleichen“."); $("syncBox").open = true; }
 if ("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
